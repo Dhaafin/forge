@@ -1,53 +1,58 @@
-/**
- * Below are the colors that are used in the app. The colors are defined in the light and dark mode.
- * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://reactnativeunistyles.vercel.app), etc.
- */
+export const MotorsportTheme = {
+  colors: {
+    bgDark: '#0B0D10',        // Deep Carbon Gray
+    bgCard: '#14171D',        // Matte Fairing Gray
+    bgInput: '#1C2028',       // Titanium Intake Gray
+    bgInputFocus: '#242A35',  // Active Focus Gray
+    border: '#2A303C',        // Chassis Border
+    borderActive: '#0066B1',  // Active BMW M-Blue Border
+    
+    // M-Sport Livery Palette
+    mRed: '#E2231A',          // M-Performance Red
+    mBlue: '#0066B1',         // M-Performance Dark Blue
+    mCyan: '#00A3E0',         // M-Performance Cyan / Light Blue
+    accentGold: '#D4AF37',    // Ohlins Gold Accent
 
-import { Platform } from 'react-native';
-
-const tintColorLight = '#0a7ea4';
-const tintColorDark = '#fff';
-
-export const Colors = {
-  light: {
-    text: '#11181C',
-    background: '#fff',
-    tint: tintColorLight,
-    icon: '#687076',
-    tabIconDefault: '#687076',
-    tabIconSelected: tintColorLight,
+    // Text & Status
+    textWhite: '#FFFFFF',     // Alpine White
+    textMuted: '#94A0B8',     // Telemetry Gray
+    textDim: '#5A6478',       // Subdued Label
+    error: '#FF4D4D',         // Warning Red
+    success: '#00E676',       // Green Flag
   },
-  dark: {
-    text: '#ECEDEE',
-    background: '#151718',
-    tint: tintColorDark,
-    icon: '#9BA1A6',
-    tabIconDefault: '#9BA1A6',
-    tabIconSelected: tintColorDark,
+  fonts: {
+    header: 'Inter_700Bold',
+    headerHeavy: 'Inter_800ExtraBold',
+    body: 'Poppins_400Regular',
+    bodyMedium: 'Poppins_500Medium',
+    bodySemiBold: 'Poppins_600SemiBold',
   },
 };
 
-export const Fonts = Platform.select({
-  ios: {
-    /** iOS `UIFontDescriptorSystemDesignDefault` */
-    sans: 'system-ui',
-    /** iOS `UIFontDescriptorSystemDesignSerif` */
-    serif: 'ui-serif',
-    /** iOS `UIFontDescriptorSystemDesignRounded` */
-    rounded: 'ui-rounded',
-    /** iOS `UIFontDescriptorSystemDesignMonospaced` */
-    mono: 'ui-monospace',
+// Legacy Expo template theme compatibility
+export const Colors = {
+  light: {
+    text: '#FFFFFF',
+    background: '#0B0D10',
+    tint: '#0066B1',
+    icon: '#94A0B8',
+    tabIconDefault: '#5A6478',
+    tabIconSelected: '#0066B1',
   },
-  default: {
-    sans: 'normal',
-    serif: 'serif',
-    rounded: 'normal',
-    mono: 'monospace',
+  dark: {
+    text: '#FFFFFF',
+    background: '#0B0D10',
+    tint: '#0066B1',
+    icon: '#94A0B8',
+    tabIconDefault: '#5A6478',
+    tabIconSelected: '#0066B1',
   },
-  web: {
-    sans: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
-    serif: "Georgia, 'Times New Roman', serif",
-    rounded: "'SF Pro Rounded', 'Hiragino Maru Gothic ProN', Meiryo, 'MS PGothic', sans-serif",
-    mono: "SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
-  },
-});
+};
+
+export const Fonts = {
+  regular: 'Poppins_400Regular',
+  medium: 'Poppins_500Medium',
+  bold: 'Inter_700Bold',
+  rounded: 'Poppins_500Medium',
+  mono: 'Poppins_400Regular',
+};
