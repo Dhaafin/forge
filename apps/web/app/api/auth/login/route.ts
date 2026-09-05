@@ -1,17 +1,18 @@
 import { NextResponse } from 'next/server';
 import { db, users } from '@repo/db';
 import { eq } from 'drizzle-orm';
+import { LoginSchema } from '@/lib/validations';
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { username, password } = body;
-
-    if (!username || !password) {
-      return NextResponse.json({ error: 'Username and password are required' }, { status: 400 });
+    const result = LoginSchema.safeParse(body);
+    if (!result.success) {
+      return NextResponse.json({ error: 'Username and password are required', details: result.error.format() }, { status: 400 });
     }
 
-    const normalizedUsername = String(username).trim().toLowerCase();
+    const { username } = result.data;
+    const normalizedUsername = username.toLowerCase();
     const [existingUser] = await db.select().from(users).where(eq(users.username, normalizedUsername)).limit(1);
 
     if (!existingUser) {

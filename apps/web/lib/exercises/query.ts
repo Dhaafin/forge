@@ -1,6 +1,6 @@
 import { db, exercises } from "@repo/db";
 import { workoutSets, workoutSessions } from "@repo/db";
-import { eq, and, ilike, or, asc, desc, SQL } from "drizzle-orm";
+import { eq, and, ilike, or, asc, desc, count } from "drizzle-orm";
 
 // ── Exercise List Query ─────────────────────────────────────────────────────
 
@@ -15,18 +15,26 @@ export type ExerciseQueryParams = {
 export async function getAllExercises(params: ExerciseQueryParams = {}) {
   const { search, sortBy = "name", order = "asc", limit = 20, offset = 0 } = params;
 
-  const query = db.select().from(exercises).$dynamic();
+  const whereClause = search
+    ? or(ilike(exercises.name, `%${search}%`), ilike(exercises.targetMuscle, `%${search}%`))
+    : undefined;
 
-  if (search) {
-    const term = `%${search}%`;
-    query.where(or(ilike(exercises.name, term), ilike(exercises.targetMuscle, term)));
-  }
+  const [{ total }] = await db
+    .select({ total: count() })
+    .from(exercises)
+    .where(whereClause);
 
   const sortCol = sortBy === "target_muscle" ? exercises.targetMuscle : exercises.name;
-  query.orderBy(order === "desc" ? desc(sortCol) : asc(sortCol));
-  query.limit(limit).offset(offset);
 
-  return query;
+  const data = await db
+    .select()
+    .from(exercises)
+    .where(whereClause)
+    .orderBy(order === "desc" ? desc(sortCol) : asc(sortCol))
+    .limit(limit)
+    .offset(offset);
+
+  return { data, total: Number(total) };
 }
 
 // ── Exercise History ────────────────────────────────────────────────────────

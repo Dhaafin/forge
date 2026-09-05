@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
-import { db, exercises } from '@repo/db';
-import { workoutSets } from '@repo/db';
-import { eq } from 'drizzle-orm';
+import { db, exercises, workoutSets } from '@repo/db';
+import { eq, and, ne, ilike } from 'drizzle-orm';
+import { UpdateExerciseSchema } from '@/lib/validations';
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -10,18 +10,31 @@ export async function PUT(request: Request, { params }: Params) {
   try {
     const { id } = await params;
     const body = await request.json();
-    const { name, targetMuscle } = body;
+    const result = UpdateExerciseSchema.safeParse(body);
 
-    if (!name || !targetMuscle) {
-      return NextResponse.json({ error: 'name and targetMuscle are required' }, { status: 400 });
+    if (!result.success) {
+      return NextResponse.json({ error: 'Validation failed', details: result.error.format() }, { status: 400 });
     }
+
+    const { name, targetMuscle } = result.data;
 
     const [existing] = await db.select().from(exercises).where(eq(exercises.id, id)).limit(1);
     if (!existing) return NextResponse.json({ error: 'Exercise not found' }, { status: 404 });
 
+    // Collision check: prevent updating to a name that another exercise already uses
+    const [nameConflict] = await db
+      .select({ id: exercises.id })
+      .from(exercises)
+      .where(and(ilike(exercises.name, name), ne(exercises.id, id)))
+      .limit(1);
+
+    if (nameConflict) {
+      return NextResponse.json({ error: 'Another exercise with this name already exists' }, { status: 400 });
+    }
+
     const [updated] = await db
       .update(exercises)
-      .set({ name: String(name).trim(), targetMuscle: String(targetMuscle).trim() })
+      .set({ name, targetMuscle })
       .where(eq(exercises.id, id))
       .returning();
 
