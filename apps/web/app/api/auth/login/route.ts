@@ -11,19 +11,19 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Email and password are required' }, { status: 400 });
     }
 
-    // In a real app, hash password and compare, generate JWT/Session
-    const user = await db.select().from(users).where(eq(users.email, email)).limit(1);
+    const userList = await db.select().from(users).where(eq(users.email, email)).limit(1);
+    const existingUser = userList[0];
 
-    if (user.length === 0) {
+    if (!existingUser) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
     return NextResponse.json({
       message: 'Login successful (simulated)',
       user: {
-        id: user[0].id,
-        email: user[0].email,
-        name: user[0].name,
+        id: existingUser.id,
+        email: existingUser.email,
+        name: existingUser.name,
       },
       token: 'simulated_jwt_token_for_expo'
     });
