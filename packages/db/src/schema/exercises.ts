@@ -9,7 +9,6 @@ export const TARGET_MUSCLES = [
   "Core",
   "Cardio",
   "Full Body",
-  "Calves",
 ] as const;
 
 export type TargetMuscle = (typeof TARGET_MUSCLES)[number];

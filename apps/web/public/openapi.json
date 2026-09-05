@@ -143,7 +143,7 @@
                   "name": { "type": "string", "example": "Cable Row" },
                   "targetMuscle": {
                     "type": "string",
-                    "enum": ["Chest", "Back", "Legs", "Shoulders", "Arms", "Core", "Cardio", "Full Body", "Calves"],
+                    "enum": ["Chest", "Back", "Legs", "Shoulders", "Arms", "Core", "Cardio", "Full Body"],
                     "example": "Back"
                   }
                 }
@@ -174,7 +174,7 @@
                   "name": { "type": "string", "example": "Incline Bench Press" },
                   "targetMuscle": {
                     "type": "string",
-                    "enum": ["Chest", "Back", "Legs", "Shoulders", "Arms", "Core", "Cardio", "Full Body", "Calves"],
+                    "enum": ["Chest", "Back", "Legs", "Shoulders", "Arms", "Core", "Cardio", "Full Body"],
                     "example": "Chest"
                   }
                 }
