@@ -46,7 +46,8 @@ export async function getExerciseHistory(
   const { limit = 15, offset = 0 } = params;
 
   const exercise = await db.select().from(exercises).where(eq(exercises.id, exerciseId)).limit(1);
-  if (exercise.length === 0) return null;
+  if (exercise.length === 0 || !exercise[0]) return null;
+  const ex = exercise[0];
 
   // All-time sets for stats computation
   const allSets = await db
@@ -58,8 +59,8 @@ export async function getExerciseHistory(
   if (allSets.length === 0) {
     return {
       exerciseId,
-      exerciseName: exercise[0].name,
-      targetMuscle: exercise[0].targetMuscle,
+      exerciseName: ex.name,
+      targetMuscle: ex.targetMuscle,
       allTimeMaxWeight: 0,
       allTimeMaxVolume: 0,
       estimatedOneRm: 0,
@@ -125,8 +126,8 @@ export async function getExerciseHistory(
 
   return {
     exerciseId,
-    exerciseName: exercise[0].name,
-    targetMuscle: exercise[0].targetMuscle,
+    exerciseName: ex.name,
+    targetMuscle: ex.targetMuscle,
     allTimeMaxWeight,
     allTimeMaxVolume,
     estimatedOneRm: Math.round(estimatedOneRm * 100) / 100,

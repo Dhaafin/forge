@@ -58,6 +58,8 @@ export async function createSession(payload: CreateSessionPayload, userId: strin
     .values({ userId, title: payload.title, startTime: sessionStart, endTime: sessionEnd, durationMinutes: duration })
     .returning();
 
+  if (!session) throw new Error("Failed to create workout session");
+
   // 2. Evaluate PRs and insert sets
   for (const s of payload.sets) {
     // Find highest weight for this exercise across all past sessions (not current)

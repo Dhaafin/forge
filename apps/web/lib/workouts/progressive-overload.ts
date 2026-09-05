@@ -44,14 +44,15 @@ export async function detectProgressiveOverload(
       .orderBy(desc(workoutSessions.startTime))
       .limit(1);
 
-    if (lastSet.length === 0) continue; // No previous data
+    if (lastSet.length === 0 || !lastSet[0]) continue; // No previous data
+    const prevSession = lastSet[0];
 
     const prevSets = await db
       .select()
       .from(workoutSets)
       .where(
         and(
-          eq(workoutSets.sessionId, lastSet[0].sessionId),
+          eq(workoutSets.sessionId, prevSession.sessionId),
           eq(workoutSets.exerciseId, exerciseId)
         )
       );
