@@ -3,7 +3,7 @@
   "info": {
     "title": "Forge API",
     "version": "1.0.0",
-    "description": "API documentation for the Forge Mobile App backend"
+    "description": "API documentation for the Forge Gym Mobile App backend"
   },
   "servers": [
     {
@@ -14,8 +14,9 @@
   "paths": {
     "/api/auth/login": {
       "post": {
+        "tags": ["Auth"],
         "summary": "User Login",
-        "description": "Authenticates user using username and password. Returns a Bearer JWT token.",
+        "description": "Authenticate with username and password. Copy the `token` from the response and use the Authorize button (🔒) to set your Bearer token.",
         "requestBody": {
           "required": true,
           "content": {
@@ -24,15 +25,8 @@
                 "type": "object",
                 "required": ["username", "password"],
                 "properties": {
-                  "username": {
-                    "type": "string",
-                    "example": "dhaafinm"
-                  },
-                  "password": {
-                    "type": "string",
-                    "format": "password",
-                    "example": "dhaafin5758"
-                  }
+                  "username": { "type": "string", "example": "dhaafinm" },
+                  "password": { "type": "string", "format": "password", "example": "dhaafin5758" }
                 }
               }
             }
@@ -61,49 +55,314 @@
               }
             }
           },
-          "400": { "description": "Bad Request - Missing username or password" },
-          "401": { "description": "Unauthorized - Invalid username or password" },
+          "400": { "description": "Bad Request — missing fields" },
+          "401": { "description": "Unauthorized — invalid credentials" },
           "500": { "description": "Internal Server Error" }
         }
       }
     },
     "/api/auth/me": {
       "get": {
+        "tags": ["Auth"],
         "summary": "Get Current User Profile",
-        "description": "Protected endpoint requiring Bearer Token authentication",
-        "security": [
-          {
-            "bearerAuth": []
-          }
+        "description": "Protected. Requires Bearer token from /api/auth/login.",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Profile retrieved successfully" },
+          "401": { "description": "Unauthorized — missing/invalid Bearer token" },
+          "404": { "description": "User profile not found" },
+          "500": { "description": "Internal Server Error" }
+        }
+      }
+    },
+    "/api/exercises": {
+      "get": {
+        "tags": ["Exercises"],
+        "summary": "List Exercises",
+        "description": "Get the exercise library with search, sort, and pagination.",
+        "parameters": [
+          { "name": "search", "in": "query", "schema": { "type": "string" }, "description": "Search by name or target muscle" },
+          { "name": "sortBy", "in": "query", "schema": { "type": "string", "enum": ["name", "target_muscle"], "default": "name" } },
+          { "name": "order", "in": "query", "schema": { "type": "string", "enum": ["asc", "desc"], "default": "asc" } },
+          { "name": "limit", "in": "query", "schema": { "type": "integer", "default": 20 } },
+          { "name": "offset", "in": "query", "schema": { "type": "integer", "default": 0 } }
         ],
         "responses": {
           "200": {
-            "description": "Profile retrieved successfully",
+            "description": "List of exercises",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": { "type": "string" },
-                    "user": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": { "type": "string" },
+                      "name": { "type": "string", "example": "Bench Press" },
+                      "targetMuscle": { "type": "string", "example": "Chest" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Exercises"],
+        "summary": "Create Exercise",
+        "description": "Add a new exercise to the global library.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name", "targetMuscle"],
+                "properties": {
+                  "name": { "type": "string", "example": "Cable Row" },
+                  "targetMuscle": {
+                    "type": "string",
+                    "enum": ["Chest", "Back", "Legs", "Shoulders", "Arms", "Core", "Cardio", "Full Body", "Calves"],
+                    "example": "Back"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Exercise created" },
+          "400": { "description": "Validation error or duplicate name" },
+          "500": { "description": "Internal Server Error" }
+        }
+      }
+    },
+    "/api/exercises/{id}": {
+      "put": {
+        "tags": ["Exercises"],
+        "summary": "Update Exercise",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name", "targetMuscle"],
+                "properties": {
+                  "name": { "type": "string" },
+                  "targetMuscle": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Exercise updated" },
+          "404": { "description": "Exercise not found" }
+        }
+      },
+      "delete": {
+        "tags": ["Exercises"],
+        "summary": "Delete Exercise",
+        "description": "Blocked if exercise has linked workout sets.",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "204": { "description": "Deleted successfully" },
+          "400": { "description": "Exercise linked to historical sets" },
+          "404": { "description": "Exercise not found" }
+        }
+      }
+    },
+    "/api/exercises/{id}/history": {
+      "get": {
+        "tags": ["Exercises"],
+        "summary": "Exercise History & Analytics",
+        "description": "All-time stats (max weight, max volume, estimated 1RM) + per-session breakdown for a specific exercise. Requires `x-user-id` header.",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } },
+          { "name": "x-user-id", "in": "header", "required": true, "schema": { "type": "string" }, "description": "User UUID" },
+          { "name": "limit", "in": "query", "schema": { "type": "integer", "default": 15 } },
+          { "name": "offset", "in": "query", "schema": { "type": "integer", "default": 0 } }
+        ],
+        "responses": {
+          "200": { "description": "Exercise history with all-time stats" },
+          "401": { "description": "Missing x-user-id" },
+          "404": { "description": "Exercise not found" }
+        }
+      }
+    },
+    "/api/workouts/sessions": {
+      "get": {
+        "tags": ["Workout Sessions"],
+        "summary": "List Session History",
+        "description": "All workout sessions for the user with filtering, sorting, and pagination. Requires `x-user-id` header.",
+        "parameters": [
+          { "name": "x-user-id", "in": "header", "required": true, "schema": { "type": "string" } },
+          { "name": "search", "in": "query", "schema": { "type": "string" } },
+          { "name": "startDate", "in": "query", "schema": { "type": "string", "format": "date" } },
+          { "name": "endDate", "in": "query", "schema": { "type": "string", "format": "date" } },
+          { "name": "timeWindow", "in": "query", "schema": { "type": "string", "enum": ["7d", "30d", "90d", "ytd"] } },
+          { "name": "sortBy", "in": "query", "schema": { "type": "string", "enum": ["start_time", "duration_minutes", "title"], "default": "start_time" } },
+          { "name": "order", "in": "query", "schema": { "type": "string", "enum": ["asc", "desc"], "default": "desc" } },
+          { "name": "limit", "in": "query", "schema": { "type": "integer", "default": 20 } },
+          { "name": "offset", "in": "query", "schema": { "type": "integer", "default": 0 } }
+        ],
+        "responses": {
+          "200": { "description": "List of workout sessions" },
+          "401": { "description": "Missing x-user-id" }
+        }
+      },
+      "post": {
+        "tags": ["Workout Sessions"],
+        "summary": "Create Workout Session",
+        "description": "Records a new workout session with sets. Auto-evaluates PR flags and detects progressive overload vs the previous session. Requires `x-user-id` header.",
+        "parameters": [
+          { "name": "x-user-id", "in": "header", "required": true, "schema": { "type": "string" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["sets"],
+                "properties": {
+                  "title": { "type": "string", "example": "Push Day A" },
+                  "startTime": { "type": "string", "format": "date-time" },
+                  "endTime": { "type": "string", "format": "date-time" },
+                  "durationMinutes": { "type": "integer", "example": 60 },
+                  "sets": {
+                    "type": "array",
+                    "items": {
                       "type": "object",
+                      "required": ["exerciseId", "setNumber", "weightKg", "reps", "sequenceOrder"],
                       "properties": {
-                        "id": { "type": "string" },
-                        "username": { "type": "string" },
-                        "name": { "type": "string" },
-                        "email": { "type": "string" },
-                        "role": { "type": "string" },
-                        "createdAt": { "type": "string" }
+                        "exerciseId": { "type": "string" },
+                        "setNumber": { "type": "integer", "example": 1 },
+                        "weightKg": { "type": "number", "example": 80.0 },
+                        "reps": { "type": "integer", "example": 10 },
+                        "setType": { "type": "string", "enum": ["normal", "warmup", "drop", "failure"], "default": "normal" },
+                        "sequenceOrder": { "type": "integer", "example": 0 }
                       }
                     }
                   }
                 }
               }
             }
-          },
-          "401": { "description": "Unauthorized - Missing or invalid Bearer token" },
-          "404": { "description": "User profile not found" },
-          "500": { "description": "Internal Server Error" }
+          }
+        },
+        "responses": {
+          "201": { "description": "Session created with PR flags evaluated" },
+          "400": { "description": "Validation error" },
+          "401": { "description": "Missing x-user-id" }
+        }
+      }
+    },
+    "/api/workouts/sessions/{id}": {
+      "put": {
+        "tags": ["Workout Sessions"],
+        "summary": "Update Workout Session",
+        "description": "Differential sync of session metadata and sets. Adds/updates/deletes sets, then recalculates PR flags. Requires `x-user-id` header.",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } },
+          { "name": "x-user-id", "in": "header", "required": true, "schema": { "type": "string" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "title": { "type": "string" },
+                  "durationMinutes": { "type": "integer" },
+                  "sets": {
+                    "type": "array",
+                    "description": "Include `id` to update existing sets; omit `id` to add new sets. Sets not present in this array will be deleted.",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "id": { "type": "string", "description": "Existing set ID (omit to create new)" },
+                        "exerciseId": { "type": "string" },
+                        "setNumber": { "type": "integer" },
+                        "weightKg": { "type": "number" },
+                        "reps": { "type": "integer" },
+                        "setType": { "type": "string" },
+                        "sequenceOrder": { "type": "integer" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Session updated" },
+          "400": { "description": "Validation error" },
+          "401": { "description": "Missing x-user-id" },
+          "404": { "description": "Session not found" }
+        }
+      },
+      "delete": {
+        "tags": ["Workout Sessions"],
+        "summary": "Delete Workout Session",
+        "description": "Cascade-deletes the session and all its sets. Recalculates PR flags for affected exercises. Requires `x-user-id` header.",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } },
+          { "name": "x-user-id", "in": "header", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "204": { "description": "Deleted successfully" },
+          "401": { "description": "Missing x-user-id" },
+          "404": { "description": "Session not found" }
+        }
+      }
+    },
+    "/api/workouts/sets/{id}": {
+      "put": {
+        "tags": ["Workout Sets"],
+        "summary": "Update Individual Set",
+        "description": "Modify weight, reps, or set type of a single set. Auto-recalculates PR flags if weight changes. Requires `x-user-id` header.",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } },
+          { "name": "x-user-id", "in": "header", "required": true, "schema": { "type": "string" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "weightKg": { "type": "number", "example": 85.0 },
+                  "reps": { "type": "integer", "example": 8 },
+                  "setType": { "type": "string", "enum": ["normal", "warmup", "drop", "failure"] }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Set updated" },
+          "401": { "description": "Missing x-user-id" },
+          "404": { "description": "Set not found" }
+        }
+      },
+      "delete": {
+        "tags": ["Workout Sets"],
+        "summary": "Delete Individual Set",
+        "description": "Permanently removes a single set and recalculates PR flags. Requires `x-user-id` header.",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } },
+          { "name": "x-user-id", "in": "header", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "204": { "description": "Deleted successfully" },
+          "401": { "description": "Missing x-user-id" },
+          "404": { "description": "Set not found" }
         }
       }
     }
