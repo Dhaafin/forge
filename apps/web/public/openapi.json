@@ -22,11 +22,11 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": ["email", "password"],
+                "required": ["username", "password"],
                 "properties": {
-                  "email": {
+                  "username": {
                     "type": "string",
-                    "format": "email"
+                    "example": "johndoe"
                   },
                   "password": {
                     "type": "string",
@@ -50,7 +50,7 @@
                       "type": "object",
                       "properties": {
                         "id": { "type": "string" },
-                        "email": { "type": "string" },
+                        "username": { "type": "string" },
                         "name": { "type": "string" }
                       }
                     },
@@ -60,8 +60,8 @@
               }
             }
           },
-          "400": { "description": "Bad Request - Missing email or password" },
-          "404": { "description": "User not found" },
+          "400": { "description": "Bad Request - Missing username or password" },
+          "401": { "description": "Unauthorized - Invalid username or password" },
           "500": { "description": "Internal Server Error" }
         }
       }
