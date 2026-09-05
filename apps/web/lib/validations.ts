@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { TARGET_MUSCLES } from '@repo/db';
 
 // ── Auth Schemas ─────────────────────────────────────────────────────────────
 
@@ -19,7 +20,9 @@ export const ExerciseQuerySchema = z.object({
 
 export const CreateExerciseSchema = z.object({
   name: z.string().min(1, 'Name is required').max(100).trim(),
-  targetMuscle: z.string().min(1, 'Target muscle is required').max(100).trim(),
+  targetMuscle: z.enum(TARGET_MUSCLES as any, {
+    message: `targetMuscle must be one of: ${TARGET_MUSCLES.join(', ')}`,
+  }),
 });
 
 export const UpdateExerciseSchema = CreateExerciseSchema;

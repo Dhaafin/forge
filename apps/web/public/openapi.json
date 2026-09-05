@@ -171,8 +171,12 @@
                 "type": "object",
                 "required": ["name", "targetMuscle"],
                 "properties": {
-                  "name": { "type": "string" },
-                  "targetMuscle": { "type": "string" }
+                  "name": { "type": "string", "example": "Incline Bench Press" },
+                  "targetMuscle": {
+                    "type": "string",
+                    "enum": ["Chest", "Back", "Legs", "Shoulders", "Arms", "Core", "Cardio", "Full Body", "Calves"],
+                    "example": "Chest"
+                  }
                 }
               }
             }
