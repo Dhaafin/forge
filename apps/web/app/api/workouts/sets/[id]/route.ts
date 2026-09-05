@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server';
 import { updateSet, deleteSet } from '@/lib/workouts/set';
+import { UpdateWorkoutSetSchema } from '@/lib/validations';
 
 type Params = { params: Promise<{ id: string }> };
 
 // PUT /api/workouts/sets/[id]
-// Body: { weightKg?, reps?, setType? }
 export async function PUT(request: Request, { params }: Params) {
   try {
     const userId = request.headers.get('x-user-id');
@@ -12,7 +12,13 @@ export async function PUT(request: Request, { params }: Params) {
 
     const { id } = await params;
     const body = await request.json();
-    const { weightKg, reps, setType } = body;
+    const result = UpdateWorkoutSetSchema.safeParse(body);
+
+    if (!result.success) {
+      return NextResponse.json({ error: 'Validation failed', details: result.error.format() }, { status: 400 });
+    }
+
+    const { weightKg, reps, setType } = result.data;
 
     const updated = await updateSet(id, { weightKg, reps, setType }, userId);
     if (!updated) return NextResponse.json({ error: 'Set not found or unauthorized' }, { status: 404 });

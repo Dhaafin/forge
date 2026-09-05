@@ -19,10 +19,12 @@ export async function getAllExercises(params: ExerciseQueryParams = {}) {
     ? or(ilike(exercises.name, `%${search}%`), ilike(exercises.targetMuscle, `%${search}%`))
     : undefined;
 
-  const [{ total }] = await db
+  const [countResult] = await db
     .select({ total: count() })
     .from(exercises)
     .where(whereClause);
+
+  const total = Number(countResult?.total ?? 0);
 
   const sortCol = sortBy === "target_muscle" ? exercises.targetMuscle : exercises.name;
 

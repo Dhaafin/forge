@@ -89,17 +89,31 @@
         ],
         "responses": {
           "200": {
-            "description": "List of exercises",
+            "description": "Paginated list of exercises in REST envelope",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "properties": {
-                      "id": { "type": "string" },
-                      "name": { "type": "string", "example": "Bench Press" },
-                      "targetMuscle": { "type": "string", "example": "Chest" }
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": { "type": "string" },
+                          "name": { "type": "string", "example": "Bench Press" },
+                          "targetMuscle": { "type": "string", "example": "Chest" }
+                        }
+                      }
+                    },
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "total": { "type": "integer", "example": 21 },
+                        "limit": { "type": "integer", "example": 20 },
+                        "offset": { "type": "integer", "example": 0 },
+                        "hasMore": { "type": "boolean", "example": true }
+                      }
                     }
                   }
                 }
@@ -210,7 +224,39 @@
           { "name": "offset", "in": "query", "schema": { "type": "integer", "default": 0 } }
         ],
         "responses": {
-          "200": { "description": "List of workout sessions" },
+          "200": {
+            "description": "Paginated list of workout sessions in REST envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": { "type": "string" },
+                          "title": { "type": "string", "example": "Push Day A" },
+                          "startTime": { "type": "string", "format": "date-time" },
+                          "durationMinutes": { "type": "integer", "example": 60 }
+                        }
+                      }
+                    },
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "total": { "type": "integer", "example": 5 },
+                        "limit": { "type": "integer", "example": 20 },
+                        "offset": { "type": "integer", "example": 0 },
+                        "hasMore": { "type": "boolean", "example": false }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
           "401": { "description": "Missing x-user-id" }
         }
       },

@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
-import { db } from '@repo/db';
-import { workoutSessions } from '@repo/db';
+import { db, workoutSessions } from '@repo/db';
 import { eq, and } from 'drizzle-orm';
-import { updateSession, deleteSession, getSessionById } from '@/lib/workouts/session';
+import { updateSession, deleteSession } from '@/lib/workouts/session';
+import { UpdateSessionSchema } from '@/lib/validations';
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -23,14 +23,22 @@ export async function PUT(request: Request, { params }: Params) {
     if (!existing) return NextResponse.json({ error: 'Session not found' }, { status: 404 });
 
     const body = await request.json();
+    const result = UpdateSessionSchema.safeParse(body);
+
+    if (!result.success) {
+      return NextResponse.json({ error: 'Validation failed', details: result.error.format() }, { status: 400 });
+    }
+
+    const { title, startTime, endTime, durationMinutes, sets } = result.data;
+
     const session = await updateSession(
       id,
       {
-        title: body.title,
-        startTime: body.startTime ? new Date(body.startTime) : undefined,
-        endTime: body.endTime ? new Date(body.endTime) : undefined,
-        durationMinutes: body.durationMinutes,
-        sets: body.sets,
+        title,
+        startTime: startTime ? new Date(startTime) : undefined,
+        endTime: endTime ? new Date(endTime) : undefined,
+        durationMinutes,
+        sets,
       },
       userId
     );
