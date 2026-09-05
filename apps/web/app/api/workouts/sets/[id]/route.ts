@@ -1,14 +1,15 @@
 import { NextResponse } from 'next/server';
 import { updateSet, deleteSet } from '@/lib/workouts/set';
 import { UpdateWorkoutSetSchema } from '@/lib/validations';
+import { getUserIdFromRequest } from '@/lib/auth';
 
 type Params = { params: Promise<{ id: string }> };
 
 // PUT /api/workouts/sets/[id]
 export async function PUT(request: Request, { params }: Params) {
   try {
-    const userId = request.headers.get('x-user-id');
-    if (!userId) return NextResponse.json({ error: 'x-user-id header is required' }, { status: 401 });
+    const userId = await getUserIdFromRequest(request);
+    if (!userId) return NextResponse.json({ error: 'Unauthorized: Bearer token or x-user-id header is required' }, { status: 401 });
 
     const { id } = await params;
     const body = await request.json();
@@ -33,8 +34,8 @@ export async function PUT(request: Request, { params }: Params) {
 // DELETE /api/workouts/sets/[id]
 export async function DELETE(request: Request, { params }: Params) {
   try {
-    const userId = request.headers.get('x-user-id');
-    if (!userId) return NextResponse.json({ error: 'x-user-id header is required' }, { status: 401 });
+    const userId = await getUserIdFromRequest(request);
+    if (!userId) return NextResponse.json({ error: 'Unauthorized: Bearer token or x-user-id header is required' }, { status: 401 });
 
     const { id } = await params;
     const deleted = await deleteSet(id, userId);

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { db, users } from '@repo/db';
 import { eq } from 'drizzle-orm';
 import { LoginSchema } from '@/lib/validations';
+import { signToken } from '@/lib/auth';
 
 export async function POST(request: Request) {
   try {
@@ -19,14 +20,19 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Invalid username or password' }, { status: 401 });
     }
 
+    const token = await signToken({
+      userId: existingUser.id,
+      username: existingUser.username,
+    });
+
     return NextResponse.json({
-      message: 'Login successful (simulated)',
+      message: 'Login successful',
       user: {
         id: existingUser.id,
         username: existingUser.username,
         name: existingUser.name,
       },
-      token: 'simulated_jwt_token_for_expo'
+      token,
     });
   } catch (error) {
     console.error('Login error:', error);

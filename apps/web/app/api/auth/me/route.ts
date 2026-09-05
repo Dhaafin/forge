@@ -1,22 +1,16 @@
 import { NextResponse } from 'next/server';
 import { db, users } from '@repo/db';
 import { eq } from 'drizzle-orm';
+import { getUserIdFromRequest } from '@/lib/auth';
 
 export async function GET(request: Request) {
   try {
-    const authHeader = request.headers.get('authorization');
+    const userId = await getUserIdFromRequest(request);
 
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return NextResponse.json({ error: 'Missing or invalid Authorization header' }, { status: 401 });
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized: Missing or invalid token' }, { status: 401 });
     }
 
-    const token = authHeader.substring(7).trim();
-
-    if (!token) {
-      return NextResponse.json({ error: 'Unauthorized: No token provided' }, { status: 401 });
-    }
-
-    // Return authenticated user details (simulated/demo token check)
     const [user] = await db
       .select({
         id: users.id,
@@ -27,7 +21,7 @@ export async function GET(request: Request) {
         createdAt: users.createdAt,
       })
       .from(users)
-      .where(eq(users.username, 'dhaafinm'))
+      .where(eq(users.id, userId))
       .limit(1);
 
     if (!user) {

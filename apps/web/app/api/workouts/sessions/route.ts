@@ -3,12 +3,13 @@ import { db, workoutSessions } from '@repo/db';
 import { eq, and, ilike, gte, lte, asc, desc, count, SQL } from 'drizzle-orm';
 import { createSession } from '@/lib/workouts/session';
 import { SessionQuerySchema, CreateSessionSchema } from '@/lib/validations';
+import { getUserIdFromRequest } from '@/lib/auth';
 
 // GET /api/workouts/sessions
 export async function GET(request: Request) {
   try {
-    const userId = request.headers.get('x-user-id');
-    if (!userId) return NextResponse.json({ error: 'x-user-id header is required' }, { status: 401 });
+    const userId = await getUserIdFromRequest(request);
+    if (!userId) return NextResponse.json({ error: 'Unauthorized: Bearer token or x-user-id header is required' }, { status: 401 });
 
     const { searchParams } = new URL(request.url);
     const rawParams = Object.fromEntries(searchParams.entries());
@@ -87,8 +88,8 @@ export async function GET(request: Request) {
 // POST /api/workouts/sessions
 export async function POST(request: Request) {
   try {
-    const userId = request.headers.get('x-user-id');
-    if (!userId) return NextResponse.json({ error: 'x-user-id header is required' }, { status: 401 });
+    const userId = await getUserIdFromRequest(request);
+    if (!userId) return NextResponse.json({ error: 'Unauthorized: Bearer token or x-user-id header is required' }, { status: 401 });
 
     const body = await request.json();
     const result = CreateSessionSchema.safeParse(body);

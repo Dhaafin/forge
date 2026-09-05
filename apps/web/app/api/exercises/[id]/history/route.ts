@@ -1,16 +1,15 @@
 import { NextResponse } from 'next/server';
 import { getExerciseHistory } from '@/lib/exercises/query';
+import { getUserIdFromRequest } from '@/lib/auth';
 
 type Params = { params: Promise<{ id: string }> };
 
 // GET /api/exercises/[id]/history?limit=15&offset=0
 export async function GET(request: Request, { params }: Params) {
   try {
-    // NOTE: In a production app, userId would come from a verified auth session.
-    // For this simulated API, userId is expected in the x-user-id header.
-    const userId = request.headers.get('x-user-id');
+    const userId = await getUserIdFromRequest(request);
     if (!userId) {
-      return NextResponse.json({ error: 'x-user-id header is required' }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized: Bearer token or x-user-id header is required' }, { status: 401 });
     }
 
     const { id } = await params;
