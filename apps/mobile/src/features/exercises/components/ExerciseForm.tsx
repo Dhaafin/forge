@@ -25,7 +25,7 @@ export interface ExerciseFormProps {
   initialTargetMuscle?: string;
   submitButtonText: string;
   submitButtonIcon?: React.ReactNode;
-  submitButtonVariant?: 'primary' | 'secondary' | 'outline' | 'ghost';
+  submitButtonVariant?: 'primary' | 'secondary' | 'outline' | 'dark';
   submitting: boolean;
   onCancel: () => void;
   onSubmit: (data: { name: string; targetMuscle: string }) => void;
