@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   StyleSheet,
@@ -8,10 +8,11 @@ import {
 } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Dumbbell, Search, RefreshCw, AlertCircle, ChevronRight } from 'lucide-react-native';
+import { Dumbbell, Search, RefreshCw, AlertCircle, ChevronRight, Plus } from 'lucide-react-native';
 
 import { useExercises } from '../hooks/useExercises';
 import { ExerciseItem } from '../services/exercises.service';
+import { CreateExerciseBottomSheet } from './CreateExerciseBottomSheet';
 import { Typography, Input, Badge, ScreenHeader, Skeleton } from '@/components/ui';
 import { Colors } from '@/theme/colors';
 
@@ -27,6 +28,8 @@ const MUSCLE_GROUPS = [
 
 export const ExercisesOrganism: React.FC = () => {
   const insets = useSafeAreaInsets();
+  const [createSheetVisible, setCreateSheetVisible] = useState(false);
+
   const {
     exercises,
     loading,
@@ -84,11 +87,20 @@ export const ExercisesOrganism: React.FC = () => {
   return (
     <View style={[styles.container, { paddingTop: topInsetPadding }]}>
       <View style={styles.headerWrapper}>
-        <ScreenHeader
-          titleHighlight="Exercises"
-          subtitle="Explore targeting movements for your workout programs"
-          containerStyle={styles.screenHeader}
-        />
+        <View style={styles.headerTitleRow}>
+          <ScreenHeader
+            titleHighlight="Exercises"
+            subtitle="Explore targeting movements for your workout programs"
+            containerStyle={styles.screenHeader}
+          />
+          <TouchableOpacity
+            style={styles.addButton}
+            activeOpacity={0.8}
+            onPress={() => setCreateSheetVisible(true)}
+          >
+            <Plus size={20} color="#FFFFFF" />
+          </TouchableOpacity>
+        </View>
 
         {/* Search Input */}
         <Input
@@ -174,6 +186,13 @@ export const ExercisesOrganism: React.FC = () => {
           }
         />
       )}
+
+      {/* Create Exercise Bottom Sheet */}
+      <CreateExerciseBottomSheet
+        visible={createSheetVisible}
+        onClose={() => setCreateSheetVisible(false)}
+        onSuccess={() => refetch()}
+      />
     </View>
   );
 };
@@ -186,8 +205,29 @@ const styles = StyleSheet.create({
   headerWrapper: {
     paddingHorizontal: 20,
   },
+  headerTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+  },
+  addButton: {
+    width: 38,
+    height: 38,
+    borderRadius: 12,
+    backgroundColor: Colors.racingRed,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 4,
+    shadowColor: Colors.racingRed,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.35,
+    shadowRadius: 6,
+    elevation: 4,
+  },
   screenHeader: {
+    flex: 1,
     marginBottom: 12,
+    marginRight: 12,
   },
   searchInputContainer: {
     marginBottom: 12,

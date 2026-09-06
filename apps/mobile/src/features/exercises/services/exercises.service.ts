@@ -38,4 +38,12 @@ export const exercisesService = {
 
     return apiFetch<ExercisesResponse>(endpoint);
   },
+
+  /** Create a new exercise */
+  async createExercise(data: { name: string; targetMuscle: string }): Promise<ExerciseItem> {
+    return apiFetch<ExerciseItem>(ApiConfig.endpoints.exercises, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
 };
