@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   View,
   StyleSheet,
@@ -7,13 +7,14 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
   ScrollView,
+  PanResponder,
 } from 'react-native';
 import Animated, { FadeInUp, FadeOutDown } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Dumbbell, X, Plus } from 'lucide-react-native';
 
 import { exercisesService, ExerciseItem } from '../services/exercises.service';
-import { Typography, Input, Button, Skeleton } from '@/components/ui';
+import { Typography, Input, Button } from '@/components/ui';
 import { useFlashMessage } from '@/ctx/flash-message-context';
 import { Colors } from '@/theme/colors';
 
@@ -34,7 +35,7 @@ export interface CreateExerciseBottomSheetProps {
   onSuccess?: (exercise: ExerciseItem) => void;
 }
 
-/** Lightweight & Modern Create Exercise Bottom Sheet */
+/** Lightweight & Modern Create Exercise Bottom Sheet with Native Drag-Down Dismiss */
 export const CreateExerciseBottomSheet: React.FC<CreateExerciseBottomSheetProps> = ({
   visible,
   onClose,
@@ -57,6 +58,19 @@ export const CreateExerciseBottomSheet: React.FC<CreateExerciseBottomSheetProps>
     resetForm();
     onClose();
   };
+
+  // Native PanResponder for drag-to-dismiss handle
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: (_, gestureState) => gestureState.dy > 5,
+      onPanResponderRelease: (_, gestureState) => {
+        if (gestureState.dy > 50) {
+          handleClose();
+        }
+      },
+    })
+  ).current;
 
   const handleSubmit = async () => {
     Keyboard.dismiss();
@@ -107,15 +121,15 @@ export const CreateExerciseBottomSheet: React.FC<CreateExerciseBottomSheetProps>
           />
 
           <Animated.View
-            entering={FadeInUp.duration(260)}
+            entering={FadeInUp.duration(200)}
             exiting={FadeOutDown.duration(200)}
             style={[
               styles.sheet,
               { paddingBottom: Math.max(insets.bottom + 16, 24) },
             ]}
           >
-            {/* Top Handle Indicator */}
-            <View style={styles.handleContainer}>
+            {/* Draggable Top Handle */}
+            <View style={styles.handleContainer} {...panResponder.panHandlers}>
               <View style={styles.handle} />
             </View>
 
@@ -144,79 +158,70 @@ export const CreateExerciseBottomSheet: React.FC<CreateExerciseBottomSheetProps>
               </TouchableOpacity>
             </View>
 
-            {/* Submitting Skeleton Loader */}
-            {submitting ? (
-              <View style={styles.submittingSkeletonContainer}>
-                <Typography variant="caption" color={Colors.racingRed} style={{ marginBottom: 12 }}>
-                  SAVING NEW EXERCISE...
-                </Typography>
-                <Skeleton width="100%" height={48} borderRadius={10} style={{ marginBottom: 12 }} />
-                <Skeleton width="100%" height={40} borderRadius={8} />
-              </View>
-            ) : (
-              <View style={styles.formContainer}>
-                {/* Exercise Name Input */}
-                <Input
-                  label="EXERCISE NAME"
-                  placeholder="e.g., Incline Dumbbell Press"
-                  value={name}
-                  onChangeText={setName}
-                  autoCapitalize="words"
-                  autoFocus
-                />
+            {/* Form Fields */}
+            <View style={styles.formContainer}>
+              {/* Exercise Name Input */}
+              <Input
+                label="EXERCISE NAME"
+                placeholder="e.g., Incline Dumbbell Press"
+                value={name}
+                onChangeText={setName}
+                autoCapitalize="words"
+                autoFocus
+              />
 
-                {/* Target Muscle Selector */}
-                <Typography variant="label" style={styles.muscleLabel}>
-                  TARGET MUSCLE GROUP
-                </Typography>
-                <ScrollView
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
-                  contentContainerStyle={styles.muscleChipsScroll}
-                >
-                  {TARGET_MUSCLES.map((muscle) => {
-                    const isSelected = targetMuscle === muscle;
-                    return (
-                      <TouchableOpacity
-                        key={muscle}
-                        style={[
-                          styles.muscleChip,
-                          isSelected && styles.activeMuscleChip,
-                        ]}
-                        activeOpacity={0.8}
-                        onPress={() => setTargetMuscle(muscle)}
+              {/* Target Muscle Selector */}
+              <Typography variant="label" style={styles.muscleLabel}>
+                TARGET MUSCLE GROUP
+              </Typography>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.muscleChipsScroll}
+              >
+                {TARGET_MUSCLES.map((muscle) => {
+                  const isSelected = targetMuscle === muscle;
+                  return (
+                    <TouchableOpacity
+                      key={muscle}
+                      style={[
+                        styles.muscleChip,
+                        isSelected && styles.activeMuscleChip,
+                      ]}
+                      activeOpacity={0.8}
+                      onPress={() => setTargetMuscle(muscle)}
+                    >
+                      <Typography
+                        variant="caption"
+                        style={styles.chipText}
+                        color={isSelected ? Colors.textInverse : Colors.textSecondary}
                       >
-                        <Typography
-                          variant="caption"
-                          style={styles.chipText}
-                          color={isSelected ? Colors.textInverse : Colors.textSecondary}
-                        >
-                          {muscle}
-                        </Typography>
-                      </TouchableOpacity>
-                    );
-                  })}
-                </ScrollView>
+                        {muscle}
+                      </Typography>
+                    </TouchableOpacity>
+                  );
+                })}
+              </ScrollView>
 
-                {/* Action Buttons */}
-                <View style={styles.actionRow}>
-                  <Button
-                    title="CANCEL"
-                    variant="outline"
-                    onPress={handleClose}
-                    style={styles.cancelBtn}
-                  />
-                  <Button
-                    title="CREATE EXERCISE"
-                    variant="primary"
-                    loading={submitting}
-                    onPress={handleSubmit}
-                    icon={<Plus size={16} color="#FFFFFF" />}
-                    style={styles.submitBtn}
-                  />
-                </View>
+              {/* Action Buttons */}
+              <View style={styles.actionRow}>
+                <Button
+                  title="CANCEL"
+                  variant="outline"
+                  onPress={handleClose}
+                  disabled={submitting}
+                  style={styles.cancelBtn}
+                />
+                <Button
+                  title="CREATE EXERCISE"
+                  variant="primary"
+                  loading={submitting}
+                  onPress={handleSubmit}
+                  icon={!submitting ? <Plus size={16} color="#FFFFFF" /> : undefined}
+                  style={styles.submitBtn}
+                />
               </View>
-            )}
+            </View>
           </Animated.View>
         </View>
       </TouchableWithoutFeedback>
@@ -240,7 +245,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: Colors.border,
     paddingHorizontal: 20,
-    paddingTop: 12,
+    paddingTop: 8,
     shadowColor: '#000000',
     shadowOffset: { width: 0, height: -6 },
     shadowOpacity: 0.35,
@@ -249,13 +254,13 @@ const styles = StyleSheet.create({
   },
   handleContainer: {
     alignItems: 'center',
-    paddingVertical: 4,
-    marginBottom: 10,
+    paddingVertical: 12,
+    marginHorizontal: -20,
   },
   handle: {
-    width: 36,
-    height: 4,
-    borderRadius: 2,
+    width: 40,
+    height: 5,
+    borderRadius: 2.5,
     backgroundColor: Colors.border,
   },
   header: {
@@ -292,10 +297,6 @@ const styles = StyleSheet.create({
   },
   formContainer: {
     gap: 14,
-  },
-  submittingSkeletonContainer: {
-    paddingVertical: 20,
-    alignItems: 'center',
   },
   muscleLabel: {
     fontFamily: 'Inter_700Bold',
