@@ -36,7 +36,7 @@ export const LoginOrganism: React.FC = () => {
         {/* Form Section Molecule */}
         <LoginFormSection onSuccess={handleSuccess} />
 
-        {/* Footer info */}
+        {/* Footer with Cool Gym Quote */}
         <Animated.View
           entering={FadeInDown.delay(400).duration(600)}
           style={styles.footer}
@@ -48,7 +48,7 @@ export const LoginOrganism: React.FC = () => {
           </View>
 
           <Typography variant="caption" align="center" style={styles.footerText}>
-            Forge High-Performance Telemetry System • Secured with JWT
+            "Discipline is choosing between what you want now and what you want most."
           </Typography>
         </Animated.View>
       </ScrollView>
@@ -85,5 +85,8 @@ const styles = StyleSheet.create({
   },
   footerText: {
     fontSize: 11,
+    fontStyle: 'italic',
+    maxWidth: 280,
+    lineHeight: 16,
   },
 });
