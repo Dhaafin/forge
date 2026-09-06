@@ -18,6 +18,11 @@
     "typescript": "7.0.2"
   },
   "packageManager": "pnpm@11.25.0",
+  "overrides": {
+    "@react-native/codegen": "0.86.3",
+    "@react-native/babel-plugin-codegen": "0.86.3",
+    "@react-native/babel-preset": "0.86.3"
+  },
   "engines": {
     "node": ">=20"
   }
