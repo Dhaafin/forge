@@ -123,7 +123,7 @@ export const ExercisesOrganism: React.FC = () => {
               >
                 <Typography
                   variant="caption"
-                  style={[styles.chipText, isSelected && styles.activeChipText]}
+                  style={isSelected ? [styles.chipText, styles.activeChipText] : styles.chipText}
                   color={isSelected ? Colors.textInverse : Colors.textPrimary}
                 >
                   {muscle}
