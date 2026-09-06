@@ -1,9 +1,7 @@
 import { getAccessToken, setAccessToken, getRefreshToken, setRefreshToken, clearAuthTokens } from './storage';
-import { Platform } from 'react-native';
+import { ApiConfig } from '@/config/api.config';
 
-// Default API URL (Fallback to localhost or Android emulator 10.0.2.2)
-const DEFAULT_DEV_API = Platform.OS === 'android' ? 'http://10.0.2.2:3000' : 'http://localhost:3000';
-export const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || DEFAULT_DEV_API;
+export const API_BASE_URL = ApiConfig.baseUrl;
 
 let isRefreshing = false;
 let failedQueue: Array<{
@@ -22,11 +20,11 @@ const processQueue = (error: any = null) => {
   failedQueue = [];
 };
 
-/** High performance fetch wrapper with 10s timeout, auto Authorization & 401 Token Refresh */
+/** High performance fetch wrapper with centralized timeout, auto Authorization & 401 Token Refresh */
 export async function apiFetch<T = any>(
   endpoint: string,
   options: RequestInit = {},
-  timeoutMs = 10000
+  timeoutMs = ApiConfig.timeoutMs
 ): Promise<T> {
   const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${endpoint}`;
   const accessToken = await getAccessToken();
@@ -78,11 +76,11 @@ export async function apiFetch<T = any>(
           throw new Error('No refresh token available');
         }
 
-        // Call refresh API with 10s timeout
+        // Call refresh API with timeout
         const refreshController = new AbortController();
         const refreshTimeoutId = setTimeout(() => refreshController.abort(), timeoutMs);
 
-        const refreshRes = await fetch(`${API_BASE_URL}/api/auth/refresh`, {
+        const refreshRes = await fetch(`${API_BASE_URL}${ApiConfig.endpoints.auth.refresh}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ refreshToken }),
@@ -128,10 +126,10 @@ export async function apiFetch<T = any>(
   } catch (err: any) {
     clearTimeout(timeoutId);
     if (err.name === 'AbortError') {
-      throw new Error(`Connection timed out (${timeoutMs / 1000}s). Make sure backend web server is running at ${API_BASE_URL}`);
+      throw new Error(`Connection timed out (${timeoutMs / 1000}s). Server at ${API_BASE_URL} did not respond.`);
     }
     if (err.message === 'Network request failed') {
-      throw new Error(`Cannot connect to backend server at ${API_BASE_URL}. Ensure Next.js dev server is running.`);
+      throw new Error(`Cannot connect to backend server at ${API_BASE_URL}. Ensure you have internet / network connectivity.`);
     }
     throw err;
   }
