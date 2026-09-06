@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   StyleSheet,
@@ -15,10 +15,14 @@ import {
   AlertCircle,
   Clock,
   Dumbbell,
+  Plus,
 } from 'lucide-react-native';
 
 import { useWorkoutHistory } from '../hooks/useWorkoutHistory';
 import { WorkoutSessionItem } from '../services/history.service';
+import { RecordModeBottomSheet } from '@/features/workouts/components/RecordModeBottomSheet';
+import { ActiveWorkoutScreen } from '@/features/workouts/components/ActiveWorkoutScreen';
+import { WorkoutMode } from '@/features/workouts/hooks/useActiveWorkout';
 import { Typography, Input, Badge, ScreenHeader, Skeleton } from '@/components/ui';
 import { Colors } from '@/theme/colors';
 
@@ -47,6 +51,9 @@ function formatDate(dateStr: string): string {
 
 export const HistoryOrganism: React.FC = () => {
   const insets = useSafeAreaInsets();
+  const [recordSheetVisible, setRecordSheetVisible] = useState(false);
+  const [activeWorkoutVisible, setActiveWorkoutVisible] = useState(false);
+  const [selectedMode, setSelectedMode] = useState<WorkoutMode>('live');
 
   const {
     sessions,
@@ -61,6 +68,12 @@ export const HistoryOrganism: React.FC = () => {
 
   const handleSelectWindow = (value: string | null) => {
     setSelectedWindow(selectedWindow === value ? null : value);
+  };
+
+  const handleStartMode = (mode: WorkoutMode) => {
+    setSelectedMode(mode);
+    setRecordSheetVisible(false);
+    setActiveWorkoutVisible(true);
   };
 
   const renderSessionItem = ({ item, index }: { item: WorkoutSessionItem; index: number }) => (
@@ -215,6 +228,30 @@ export const HistoryOrganism: React.FC = () => {
           }
         />
       )}
+
+      {/* Floating Action Button (FAB) */}
+      <TouchableOpacity
+        style={styles.fab}
+        activeOpacity={0.85}
+        onPress={() => setRecordSheetVisible(true)}
+      >
+        <Plus size={24} color="#FFFFFF" />
+      </TouchableOpacity>
+
+      {/* Record Mode Choice Sheet */}
+      <RecordModeBottomSheet
+        visible={recordSheetVisible}
+        onClose={() => setRecordSheetVisible(false)}
+        onSelectMode={handleStartMode}
+      />
+
+      {/* Active Workout Recording Screen */}
+      <ActiveWorkoutScreen
+        visible={activeWorkoutVisible}
+        mode={selectedMode}
+        onClose={() => setActiveWorkoutVisible(false)}
+        onSuccess={() => refetch()}
+      />
     </View>
   );
 };
@@ -358,4 +395,22 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: Colors.racingRed,
   },
+  fab: {
+    position: 'absolute',
+    right: 16,
+    bottom: 16,
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: Colors.racingRed,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: Colors.racingRed,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.35,
+    shadowRadius: 8,
+    elevation: 8,
+    zIndex: 99,
+  },
 });
+
