@@ -21,9 +21,11 @@ const MUSCLE_GROUPS = [
   'Chest',
   'Back',
   'Legs',
-  'Arms',
   'Shoulders',
+  'Arms',
   'Core',
+  'Cardio',
+  'Full Body',
 ];
 
 export const ExercisesOrganism: React.FC = () => {
@@ -54,11 +56,10 @@ export const ExercisesOrganism: React.FC = () => {
       entering={FadeInDown.delay(Math.min(index * 35, 350)).duration(350)}
       style={styles.card}
     >
-      {/* Motorsport M-Tricolor Left Edge Accent Stripe */}
+      {/* Left Edge Accent Stripe */}
       <View style={styles.cardStripe}>
         <View style={[styles.stripePart, { backgroundColor: Colors.racingRed }]} />
         <View style={[styles.stripePart, { backgroundColor: Colors.motorsportBlue }]} />
-        <View style={[styles.stripePart, { backgroundColor: Colors.electricCyan }]} />
       </View>
 
       <View style={styles.cardInner}>
@@ -87,20 +88,11 @@ export const ExercisesOrganism: React.FC = () => {
   return (
     <View style={[styles.container, { paddingTop: topInsetPadding }]}>
       <View style={styles.headerWrapper}>
-        <View style={styles.headerTitleRow}>
-          <ScreenHeader
-            titleHighlight="Exercises"
-            subtitle="Explore targeting movements for your workout programs"
-            containerStyle={styles.screenHeader}
-          />
-          <TouchableOpacity
-            style={styles.addButton}
-            activeOpacity={0.8}
-            onPress={() => setCreateSheetVisible(true)}
-          >
-            <Plus size={20} color="#FFFFFF" />
-          </TouchableOpacity>
-        </View>
+        <ScreenHeader
+          titleHighlight="Exercises"
+          subtitle="Explore targeting movements for your workout programs"
+          containerStyle={styles.screenHeader}
+        />
 
         {/* Search Input */}
         <Input
@@ -111,7 +103,7 @@ export const ExercisesOrganism: React.FC = () => {
           containerStyle={styles.searchInputContainer}
         />
 
-        {/* Motorsport Slanted Filter Chips */}
+        {/* Filter Chips */}
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -125,8 +117,8 @@ export const ExercisesOrganism: React.FC = () => {
               <TouchableOpacity
                 key={muscle}
                 style={[
-                  styles.slantedChip,
-                  isSelected && styles.activeSlantedChip,
+                  styles.filterChip,
+                  isSelected && styles.activeFilterChip,
                 ]}
                 activeOpacity={0.8}
                 onPress={() => handleSelectMuscle(muscle)}
@@ -134,9 +126,9 @@ export const ExercisesOrganism: React.FC = () => {
                 <Typography
                   variant="caption"
                   style={styles.chipText}
-                  color={isSelected ? Colors.electricCyan : Colors.textPrimary}
+                  color={isSelected ? Colors.textInverse : Colors.textSecondary}
                 >
-                  {muscle.toUpperCase()}
+                  {muscle}
                 </Typography>
               </TouchableOpacity>
             );
@@ -187,6 +179,15 @@ export const ExercisesOrganism: React.FC = () => {
         />
       )}
 
+      {/* Bottom-Right Floating Action Button (FAB) */}
+      <TouchableOpacity
+        style={styles.fab}
+        activeOpacity={0.85}
+        onPress={() => setCreateSheetVisible(true)}
+      >
+        <Plus size={24} color="#FFFFFF" />
+      </TouchableOpacity>
+
       {/* Create Exercise Bottom Sheet */}
       <CreateExerciseBottomSheet
         visible={createSheetVisible}
@@ -205,29 +206,8 @@ const styles = StyleSheet.create({
   headerWrapper: {
     paddingHorizontal: 20,
   },
-  headerTitleRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    justifyContent: 'space-between',
-  },
-  addButton: {
-    width: 38,
-    height: 38,
-    borderRadius: 12,
-    backgroundColor: Colors.racingRed,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 4,
-    shadowColor: Colors.racingRed,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.35,
-    shadowRadius: 6,
-    elevation: 4,
-  },
   screenHeader: {
-    flex: 1,
     marginBottom: 12,
-    marginRight: 12,
   },
   searchInputContainer: {
     marginBottom: 12,
@@ -236,33 +216,27 @@ const styles = StyleSheet.create({
     paddingBottom: 14,
     gap: 8,
   },
-  slantedChip: {
+  filterChip: {
     paddingHorizontal: 14,
     paddingVertical: 7,
-    borderRadius: 6,
+    borderRadius: 18,
     backgroundColor: Colors.surface,
     borderWidth: 1,
     borderColor: Colors.border,
-    transform: [{ skewX: '-10deg' }],
     alignItems: 'center',
     justifyContent: 'center',
   },
-  activeSlantedChip: {
+  activeFilterChip: {
     backgroundColor: Colors.darkCarbon,
-    borderColor: Colors.racingRed,
-    borderWidth: 1.5,
+    borderColor: Colors.darkCarbon,
   },
   chipText: {
-    fontFamily: 'Inter_700Bold',
-    fontSize: 11,
-    letterSpacing: 0.5,
-    includeFontPadding: false,
-    textAlignVertical: 'center',
-    transform: [{ skewX: '10deg' }],
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 12,
   },
   listContent: {
     paddingHorizontal: 20,
-    paddingBottom: 110,
+    paddingBottom: 120,
     paddingTop: 4,
     gap: 10,
   },
@@ -353,5 +327,22 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.surface,
     borderWidth: 1,
     borderColor: Colors.racingRed,
+  },
+  fab: {
+    position: 'absolute',
+    right: 20,
+    bottom: 95,
+    width: 54,
+    height: 54,
+    borderRadius: 27,
+    backgroundColor: Colors.racingRed,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: Colors.racingRed,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.4,
+    shadowRadius: 10,
+    elevation: 8,
+    zIndex: 99,
   },
 });

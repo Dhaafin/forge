@@ -18,6 +18,7 @@ export interface ButtonProps extends TouchableOpacityProps {
   style?: ViewStyle;
 }
 
+/** Modern, Lightweight Motorsport Styled Button Component */
 export const Button: React.FC<ButtonProps> = ({
   title,
   loading = false,
@@ -30,15 +31,40 @@ export const Button: React.FC<ButtonProps> = ({
   const getVariantStyles = () => {
     switch (variant) {
       case 'primary':
-        return { bg: Colors.racingRed, text: Colors.textInverse, border: 'transparent' };
+        return {
+          bg: Colors.racingRed,
+          text: Colors.textInverse,
+          border: 'transparent',
+          shadow: true,
+        };
       case 'secondary':
-        return { bg: Colors.motorsportBlue, text: Colors.textInverse, border: 'transparent' };
+        return {
+          bg: Colors.motorsportBlue,
+          text: Colors.textInverse,
+          border: 'transparent',
+          shadow: false,
+        };
       case 'dark':
-        return { bg: Colors.darkCarbon, text: Colors.textInverse, border: 'transparent' };
+        return {
+          bg: Colors.darkCarbon,
+          text: Colors.textInverse,
+          border: 'transparent',
+          shadow: false,
+        };
       case 'outline':
-        return { bg: 'transparent', text: Colors.darkCarbon, border: Colors.border };
+        return {
+          bg: 'transparent',
+          text: Colors.darkCarbon,
+          border: Colors.border,
+          shadow: false,
+        };
       default:
-        return { bg: Colors.racingRed, text: Colors.textInverse, border: 'transparent' };
+        return {
+          bg: Colors.racingRed,
+          text: Colors.textInverse,
+          border: 'transparent',
+          shadow: true,
+        };
     }
   };
 
@@ -49,21 +75,14 @@ export const Button: React.FC<ButtonProps> = ({
       style={[
         styles.button,
         { backgroundColor: vStyles.bg, borderColor: vStyles.border },
+        vStyles.shadow && styles.primaryShadow,
         disabled && styles.disabledButton,
         style,
       ]}
-      activeOpacity={0.8}
+      activeOpacity={0.82}
       disabled={disabled || loading}
       {...props}
     >
-      {/* Motorsport Racing Stripes Line */}
-      {variant === 'primary' && !disabled && (
-        <View style={styles.stripeContainer}>
-          <View style={[styles.stripe, { backgroundColor: Colors.motorsportBlue }]} />
-          <View style={[styles.stripe, { backgroundColor: Colors.electricCyan }]} />
-        </View>
-      )}
-
       {loading ? (
         <ActivityIndicator color={vStyles.text} size="small" />
       ) : (
@@ -84,15 +103,21 @@ export const Button: React.FC<ButtonProps> = ({
 
 const styles = StyleSheet.create({
   button: {
-    height: 52,
+    height: 48,
     borderRadius: 12,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 20,
-    borderWidth: 1.5,
+    paddingHorizontal: 18,
+    borderWidth: 1,
     overflow: 'hidden',
-    position: 'relative',
+  },
+  primaryShadow: {
+    shadowColor: Colors.racingRed,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.28,
+    shadowRadius: 8,
+    elevation: 4,
   },
   contentContainer: {
     flexDirection: 'row',
@@ -104,22 +129,13 @@ const styles = StyleSheet.create({
   },
   text: {
     fontFamily: 'Inter_700Bold',
-    fontSize: 14,
-    letterSpacing: 0.8,
+    fontSize: 13,
+    letterSpacing: 0.6,
   },
   disabledButton: {
     backgroundColor: Colors.disabled,
     borderColor: 'transparent',
-  },
-  stripeContainer: {
-    position: 'absolute',
-    left: 0,
-    top: 0,
-    bottom: 0,
-    width: 6,
-    flexDirection: 'row',
-  },
-  stripe: {
-    flex: 1,
+    shadowOpacity: 0,
+    elevation: 0,
   },
 });

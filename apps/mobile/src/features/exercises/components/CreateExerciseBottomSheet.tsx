@@ -8,7 +8,7 @@ import {
   Keyboard,
   ScrollView,
 } from 'react-native';
-import Animated, { SlideInDown, SlideOutDown } from 'react-native-reanimated';
+import Animated, { FadeInUp, FadeOutDown } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Dumbbell, X, Plus } from 'lucide-react-native';
 
@@ -17,16 +17,16 @@ import { Typography, Input, Button, Skeleton } from '@/components/ui';
 import { useFlashMessage } from '@/ctx/flash-message-context';
 import { Colors } from '@/theme/colors';
 
-const TARGET_MUSCLES = [
+export const TARGET_MUSCLES = [
   'Chest',
   'Back',
   'Legs',
-  'Arms',
   'Shoulders',
+  'Arms',
   'Core',
-  'Glutes',
+  'Cardio',
   'Full Body',
-];
+] as const;
 
 export interface CreateExerciseBottomSheetProps {
   visible: boolean;
@@ -34,7 +34,7 @@ export interface CreateExerciseBottomSheetProps {
   onSuccess?: (exercise: ExerciseItem) => void;
 }
 
-/** Lightweight & Modern S1000RR Styled Create Exercise Bottom Sheet */
+/** Lightweight & Modern Create Exercise Bottom Sheet */
 export const CreateExerciseBottomSheet: React.FC<CreateExerciseBottomSheetProps> = ({
   visible,
   onClose,
@@ -44,7 +44,7 @@ export const CreateExerciseBottomSheet: React.FC<CreateExerciseBottomSheetProps>
   const { showSuccess, showError, showWarning } = useFlashMessage();
 
   const [name, setName] = useState('');
-  const [targetMuscle, setTargetMuscle] = useState('Chest');
+  const [targetMuscle, setTargetMuscle] = useState<string>('Chest');
   const [submitting, setSubmitting] = useState(false);
 
   const resetForm = () => {
@@ -107,8 +107,8 @@ export const CreateExerciseBottomSheet: React.FC<CreateExerciseBottomSheetProps>
           />
 
           <Animated.View
-            entering={SlideInDown.duration(320).springify().damping(18)}
-            exiting={SlideOutDown.duration(220)}
+            entering={FadeInUp.duration(260)}
+            exiting={FadeOutDown.duration(200)}
             style={[
               styles.sheet,
               { paddingBottom: Math.max(insets.bottom + 16, 24) },
@@ -119,7 +119,7 @@ export const CreateExerciseBottomSheet: React.FC<CreateExerciseBottomSheetProps>
               <View style={styles.handle} />
             </View>
 
-            {/* Header */}
+            {/* Sheet Header */}
             <View style={styles.header}>
               <View style={styles.headerLeft}>
                 <View style={styles.iconCircle}>
@@ -144,17 +144,10 @@ export const CreateExerciseBottomSheet: React.FC<CreateExerciseBottomSheetProps>
               </TouchableOpacity>
             </View>
 
-            {/* M-Tricolor Line */}
-            <View style={styles.tricolorLine}>
-              <View style={[styles.triSegment, { backgroundColor: Colors.racingRed }]} />
-              <View style={[styles.triSegment, { backgroundColor: Colors.motorsportBlue }]} />
-              <View style={[styles.triSegment, { backgroundColor: Colors.electricCyan }]} />
-            </View>
-
             {/* Submitting Skeleton Loader */}
             {submitting ? (
               <View style={styles.submittingSkeletonContainer}>
-                <Typography variant="caption" color={Colors.racingRed} style={{ marginBottom: 8 }}>
+                <Typography variant="caption" color={Colors.racingRed} style={{ marginBottom: 12 }}>
                   SAVING NEW EXERCISE...
                 </Typography>
                 <Skeleton width="100%" height={48} borderRadius={10} style={{ marginBottom: 12 }} />
@@ -196,9 +189,9 @@ export const CreateExerciseBottomSheet: React.FC<CreateExerciseBottomSheetProps>
                         <Typography
                           variant="caption"
                           style={styles.chipText}
-                          color={isSelected ? Colors.electricCyan : Colors.textPrimary}
+                          color={isSelected ? Colors.textInverse : Colors.textSecondary}
                         >
-                          {muscle.toUpperCase()}
+                          {muscle}
                         </Typography>
                       </TouchableOpacity>
                     );
@@ -269,7 +262,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 12,
+    marginBottom: 16,
   },
   headerLeft: {
     flexDirection: 'row',
@@ -297,16 +290,6 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     backgroundColor: Colors.surface,
   },
-  tricolorLine: {
-    height: 3,
-    flexDirection: 'row',
-    borderRadius: 1.5,
-    overflow: 'hidden',
-    marginBottom: 18,
-  },
-  triSegment: {
-    flex: 1,
-  },
   formContainer: {
     gap: 14,
   },
@@ -327,28 +310,22 @@ const styles = StyleSheet.create({
     paddingBottom: 6,
   },
   muscleChip: {
-    paddingHorizontal: 14,
-    paddingVertical: 7,
-    borderRadius: 6,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
     backgroundColor: Colors.surface,
     borderWidth: 1,
     borderColor: Colors.border,
-    transform: [{ skewX: '-10deg' }],
     alignItems: 'center',
     justifyContent: 'center',
   },
   activeMuscleChip: {
     backgroundColor: Colors.darkCarbon,
-    borderColor: Colors.racingRed,
-    borderWidth: 1.5,
+    borderColor: Colors.darkCarbon,
   },
   chipText: {
-    fontFamily: 'Inter_700Bold',
-    fontSize: 11,
-    letterSpacing: 0.5,
-    includeFontPadding: false,
-    textAlignVertical: 'center',
-    transform: [{ skewX: '10deg' }],
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 12,
   },
   actionRow: {
     flexDirection: 'row',
