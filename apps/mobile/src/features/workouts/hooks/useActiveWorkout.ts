@@ -166,14 +166,28 @@ export function useActiveWorkout(onSuccess?: () => void) {
 
     exercises.forEach((ex) => {
       ex.sets.forEach((s) => {
+        const weight = Math.max(0, Number(s.weightKg) || 0);
+        const repsCount = Math.max(1, Number(s.reps) || 1);
+        const setNum = Math.max(1, Number(s.setNumber) || 1);
+
         payloadSets.push({
+          // camelCase properties for Next.js Zod validation (CreateSessionSchema)
+          exerciseId: ex.exerciseId,
+          setNumber: setNum,
+          weightKg: weight,
+          reps: repsCount,
+          setType: s.setType,
+          sequenceOrder: sequenceOrder,
+
+          // snake_case properties for FastAPI Pydantic validation (WorkoutSessionCreate)
           exercise_id: ex.exerciseId,
-          set_number: s.setNumber,
-          weight_kg: Number(s.weightKg) || 0,
-          reps: Number(s.reps) || 0,
+          set_number: setNum,
+          weight_kg: weight,
           set_type: s.setType,
-          sequence_order: sequenceOrder++,
+          sequence_order: sequenceOrder,
         });
+
+        sequenceOrder++;
       });
     });
 
@@ -190,6 +204,9 @@ export function useActiveWorkout(onSuccess?: () => void) {
 
       await workoutsService.createSession({
         title: title.trim() || 'Workout Session',
+        durationMinutes: calculatedDuration,
+        startTime: calculatedStart,
+        endTime: now.toISOString(),
         duration_minutes: calculatedDuration,
         start_time: calculatedStart,
         end_time: now.toISOString(),

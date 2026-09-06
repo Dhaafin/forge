@@ -119,7 +119,25 @@ export async function apiFetch<T = any>(
 
     if (!response.ok) {
       let errorMessage = `Request failed with status ${response.status}`;
-      if (typeof data?.detail === 'string') {
+      if (data?.details && typeof data.details === 'object') {
+        const issues: string[] = [];
+        const extractZodErrors = (obj: any, path: string[] = []) => {
+          if (obj?._errors && Array.isArray(obj._errors) && obj._errors.length > 0) {
+            issues.push(`${path.length > 0 ? path.join('.') : 'root'}: ${obj._errors.join(', ')}`);
+          }
+          for (const key in obj) {
+            if (key !== '_errors' && typeof obj[key] === 'object' && obj[key] !== null) {
+              extractZodErrors(obj[key], [...path, key]);
+            }
+          }
+        };
+        extractZodErrors(data.details);
+        if (issues.length > 0) {
+          errorMessage = `${data.error || 'Validation failed'}: ${issues.join(' | ')}`;
+        } else {
+          errorMessage = data.error || errorMessage;
+        }
+      } else if (typeof data?.detail === 'string') {
         errorMessage = data.detail;
       } else if (Array.isArray(data?.detail)) {
         errorMessage = data.detail
