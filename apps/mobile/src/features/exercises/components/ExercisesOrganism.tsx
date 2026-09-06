@@ -22,7 +22,7 @@ import { useExercises } from '../hooks/useExercises';
 import { ExerciseItem } from '../services/exercises.service';
 import { CreateExerciseBottomSheet } from './CreateExerciseBottomSheet';
 import { EditExerciseBottomSheet } from './EditExerciseBottomSheet';
-import { DeleteExerciseConfirmationModal } from './DeleteExerciseConfirmationModal';
+import { DeleteExerciseBottomSheet } from './DeleteExerciseBottomSheet';
 import { Typography, Input, Badge, ScreenHeader, Skeleton } from '@/components/ui';
 import { Colors } from '@/theme/colors';
 
@@ -232,7 +232,7 @@ export const ExercisesOrganism: React.FC = () => {
         onSuccess={() => refetch()}
       />
 
-      <DeleteExerciseConfirmationModal
+      <DeleteExerciseBottomSheet
         exercise={deletingExercise}
         visible={Boolean(deletingExercise)}
         onClose={() => setDeletingExercise(null)}
