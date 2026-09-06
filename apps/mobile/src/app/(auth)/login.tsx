@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   View,
   StyleSheet,
@@ -12,7 +12,7 @@ import { useRouter } from 'expo-router';
 import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
 import { Shield, Lock, User, Gauge, AlertCircle } from 'lucide-react-native';
 
-import { useAuth } from '@/ctx/auth-context';
+import { useLoginForm } from '@/hooks/useLoginForm';
 import { Colors } from '@/theme/colors';
 import {
   Typography,
@@ -24,37 +24,10 @@ import {
 
 export default function LoginScreen() {
   const router = useRouter();
-  const { login, rememberMe, setRememberMe } = useAuth();
+  const form = useLoginForm();
 
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
-
-  const handleLogin = async () => {
-    setErrorMsg(null);
-
-    if (!username.trim()) {
-      setErrorMsg('Please enter your username or email');
-      return;
-    }
-
-    if (!password) {
-      setErrorMsg('Please enter your password');
-      return;
-    }
-
-    setLoading(true);
-    try {
-      await login({ username: username.trim(), password }, rememberMe);
-      // Navigate to main tabs after successful authentication
-      router.replace('/');
-    } catch (err: any) {
-      console.error('Login failure:', err);
-      setErrorMsg(err?.message || 'Invalid username or password. Please try again.');
-    } finally {
-      setLoading(false);
-    }
+  const onSubmit = () => {
+    form.handleLogin(() => router.replace('/'));
   };
 
   return (
@@ -101,11 +74,11 @@ export default function LoginScreen() {
           style={styles.formCard}
         >
           {/* Error Banner */}
-          {errorMsg && (
+          {form.errorMsg && (
             <View style={styles.errorBanner}>
               <AlertCircle size={18} color={Colors.error} style={styles.errorIcon} />
               <Typography variant="body" color={Colors.error} style={styles.errorBannerText}>
-                {errorMsg}
+                {form.errorMsg}
               </Typography>
             </View>
           )}
@@ -114,8 +87,8 @@ export default function LoginScreen() {
           <Input
             label="Username or Email"
             placeholder="Enter your username"
-            value={username}
-            onChangeText={setUsername}
+            value={form.username}
+            onChangeText={form.setUsername}
             leftIcon={<User size={20} color={Colors.textSecondary} />}
             autoCapitalize="none"
             autoCorrect={false}
@@ -125,8 +98,8 @@ export default function LoginScreen() {
           <Input
             label="Password"
             placeholder="Enter your password"
-            value={password}
-            onChangeText={setPassword}
+            value={form.password}
+            onChangeText={form.setPassword}
             isPassword
             leftIcon={<Lock size={20} color={Colors.textSecondary} />}
           />
@@ -134,8 +107,8 @@ export default function LoginScreen() {
           {/* Remember Me & Forgot Password Row */}
           <View style={styles.optionsRow}>
             <Checkbox
-              value={rememberMe}
-              onValueChange={setRememberMe}
+              value={form.rememberMe}
+              onValueChange={form.setRememberMe}
               label="Remember session"
             />
             
@@ -157,8 +130,8 @@ export default function LoginScreen() {
           {/* Submit Button */}
           <Button
             title="Authenticate Session"
-            onPress={handleLogin}
-            loading={loading}
+            onPress={onSubmit}
+            loading={form.loading}
             style={styles.submitButton}
             icon={<Shield size={18} color={Colors.textInverse} />}
           />
