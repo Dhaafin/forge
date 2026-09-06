@@ -127,6 +127,11 @@ export const ActiveWorkoutScreen: React.FC<ActiveWorkoutScreenProps> = ({
   return (
     <Modal visible={visible} animationType="slide" transparent={false} onRequestClose={handleDiscard}>
       <View style={[styles.container, { paddingTop: topPadding }]}>
+        {/* Top Sheet Handle Bar for Sheet Feel */}
+        <View style={styles.sheetHandleContainer}>
+          <View style={styles.sheetHandle} />
+        </View>
+
         {/* Top Header Navigation */}
         <View style={styles.topHeader}>
           <TouchableOpacity style={styles.iconBtn} activeOpacity={0.7} onPress={handleDiscard}>
@@ -194,6 +199,16 @@ export const ActiveWorkoutScreen: React.FC<ActiveWorkoutScreenProps> = ({
           </View>
         </View>
 
+        {/* Action Button: Add Exercise under HUD */}
+        <View style={styles.addExerciseSubHeader}>
+          <Button
+            title="+ ADD EXERCISE"
+            variant="outline"
+            icon={<Plus size={16} color={Colors.racingRed} />}
+            onPress={() => setPickerVisible(true)}
+          />
+        </View>
+
         {/* Main Workout Exercises List */}
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
           {exercises.length === 0 ? (
@@ -203,7 +218,7 @@ export const ActiveWorkoutScreen: React.FC<ActiveWorkoutScreenProps> = ({
                 No Exercises Added Yet
               </Typography>
               <Typography variant="body" color={Colors.textSecondary} align="center">
-                Tap "+ Add Exercise" below to start building your workout session.
+                Tap "+ Add Exercise" above to start building your workout session.
               </Typography>
             </View>
           ) : (
@@ -344,20 +359,11 @@ export const ActiveWorkoutScreen: React.FC<ActiveWorkoutScreenProps> = ({
         {/* Bottom Action Footer Bar */}
         <View style={[styles.bottomBar, { paddingBottom: bottomPadding }]}>
           <Button
-            title="+ EXERCISE"
-            variant="outline"
-            icon={<Plus size={16} color={Colors.racingRed} />}
-            onPress={() => setPickerVisible(true)}
-            style={{ flex: 1 }}
-          />
-
-          <Button
             title="FINISH WORKOUT"
             variant="primary"
             loading={submitting}
-            icon={!submitting ? <Check size={16} color="#FFFFFF" /> : undefined}
+            icon={!submitting ? <Check size={18} color="#FFFFFF" /> : undefined}
             onPress={finishWorkout}
-            style={{ flex: 1.5 }}
           />
         </View>
 
@@ -376,6 +382,20 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.background,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    overflow: 'hidden',
+  },
+  sheetHandleContainer: {
+    alignItems: 'center',
+    paddingTop: 8,
+    paddingBottom: 4,
+  },
+  sheetHandle: {
+    width: 40,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: Colors.border,
   },
   topHeader: {
     flexDirection: 'row',
@@ -410,6 +430,11 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.surfaceElevated,
     borderBottomWidth: 1,
     borderBottomColor: Colors.border,
+  },
+  addExerciseSubHeader: {
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 4,
   },
   hudCard: {
     flex: 1,

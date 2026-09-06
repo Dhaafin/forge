@@ -300,42 +300,56 @@ export const ExercisePickerBottomSheet: React.FC<ExercisePickerBottomSheetProps>
               containerStyle={styles.searchInputContainer}
             />
 
-            {/* Muscle Filter Chips */}
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.chipsContainer}
+            {/* Create Custom Exercise Button right under search bar */}
+            <TouchableOpacity
+              style={styles.createInlineBtn}
+              activeOpacity={0.8}
+              onPress={() => setCreateSheetVisible(true)}
             >
-              {MUSCLE_GROUPS.map((muscle) => {
-                const isSelected =
-                  muscle === 'All' ? selectedMuscle === null : selectedMuscle === muscle;
+              <Plus size={14} color={Colors.racingRed} style={{ marginRight: 6 }} />
+              <Typography variant="label" color={Colors.racingRed}>
+                CREATE NEW EXERCISE
+              </Typography>
+            </TouchableOpacity>
 
-                return (
-                  <TouchableOpacity
-                    key={muscle}
-                    style={[
-                      styles.filterChip,
-                      isSelected && styles.activeFilterChip,
-                    ]}
-                    activeOpacity={0.8}
-                    onPress={() => handleSelectMuscle(muscle)}
-                  >
-                    <Typography
-                      variant="caption"
-                      style={styles.chipText}
-                      color={isSelected ? Colors.textInverse : Colors.textSecondary}
+            {/* Muscle Filter Chips */}
+            <View style={styles.chipsWrapper}>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.chipsContainer}
+              >
+                {MUSCLE_GROUPS.map((muscle) => {
+                  const isSelected =
+                    muscle === 'All' ? selectedMuscle === null : selectedMuscle === muscle;
+
+                  return (
+                    <TouchableOpacity
+                      key={muscle}
+                      style={[
+                        styles.filterChip,
+                        isSelected && styles.activeFilterChip,
+                      ]}
+                      activeOpacity={0.8}
+                      onPress={() => handleSelectMuscle(muscle)}
                     >
-                      {muscle}
-                    </Typography>
-                  </TouchableOpacity>
-                );
-              })}
-            </ScrollView>
+                      <Typography
+                        variant="caption"
+                        style={styles.chipText}
+                        color={isSelected ? Colors.textInverse : Colors.textSecondary}
+                      >
+                        {muscle}
+                      </Typography>
+                    </TouchableOpacity>
+                  );
+                })}
+              </ScrollView>
+            </View>
 
             {/* Exercise List */}
             {loading ? (
               <View style={styles.skeletonList}>
-                {[1, 2, 3, 4].map((k) => (
+                {[1, 2, 3, 4, 5].map((k) => (
                   <View key={k} style={styles.skeletonCard}>
                     <Skeleton width={34} height={34} borderRadius={17} style={{ marginRight: 12 }} />
                     <View style={{ flex: 1 }}>
@@ -350,25 +364,16 @@ export const ExercisePickerBottomSheet: React.FC<ExercisePickerBottomSheetProps>
                 keyExtractor={(item) => item.id}
                 renderItem={renderExerciseRow}
                 contentContainerStyle={styles.listContent}
+                showsVerticalScrollIndicator={false}
                 onEndReached={loadMore}
                 onEndReachedThreshold={0.4}
                 ListFooterComponent={
                   loadingMore ? (
-                    <ActivityIndicator size="small" color={Colors.racingRed} style={{ paddingVertical: 12 }} />
+                    <ActivityIndicator size="small" color={Colors.racingRed} style={{ paddingVertical: 16 }} />
                   ) : null
                 }
               />
             )}
-
-            {/* Create Custom Exercise Action Button */}
-            <View style={styles.footerAction}>
-              <Button
-                title="CREATE NEW EXERCISE"
-                variant="outline"
-                icon={<Plus size={16} color={Colors.racingRed} />}
-                onPress={() => setCreateSheetVisible(true)}
-              />
-            </View>
           </Animated.View>
 
           {/* Integration with CreateExerciseBottomSheet */}
@@ -404,7 +409,8 @@ const styles = StyleSheet.create({
     borderColor: Colors.border,
     paddingHorizontal: 20,
     paddingTop: 8,
-    height: '85%',
+    height: '92%',
+    maxHeight: '94%',
     shadowColor: '#000000',
     shadowOffset: { width: 0, height: -6 },
     shadowOpacity: 0.35,
@@ -413,7 +419,7 @@ const styles = StyleSheet.create({
   },
   handleContainer: {
     alignItems: 'center',
-    paddingVertical: 14,
+    paddingVertical: 10,
     marginHorizontal: -20,
     marginTop: -8,
   },
@@ -427,7 +433,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 12,
+    marginBottom: 10,
   },
   headerLeft: {
     flexDirection: 'row',
@@ -456,10 +462,26 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.surface,
   },
   searchInputContainer: {
+    marginBottom: 8,
+  },
+  createInlineBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 10,
+    backgroundColor: Colors.surface,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    marginBottom: 8,
+  },
+  chipsWrapper: {
+    height: 36,
     marginBottom: 10,
+    justifyContent: 'center',
   },
   chipsContainer: {
-    paddingBottom: 12,
     gap: 8,
     alignItems: 'center',
   },
@@ -483,7 +505,7 @@ const styles = StyleSheet.create({
   },
   listContent: {
     gap: 8,
-    paddingBottom: 16,
+    paddingBottom: 40,
   },
   skeletonList: {
     gap: 8,
@@ -581,8 +603,5 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderRadius: 10,
     marginTop: 6,
-  },
-  footerAction: {
-    paddingTop: 10,
   },
 });
