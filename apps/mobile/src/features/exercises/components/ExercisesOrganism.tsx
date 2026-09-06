@@ -5,11 +5,11 @@ import {
   FlatList,
   TouchableOpacity,
   ActivityIndicator,
-  SafeAreaView,
   ScrollView,
 } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
-import { Dumbbell, Search, RefreshCw, AlertCircle } from 'lucide-react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Dumbbell, Search, RefreshCw, AlertCircle, ChevronRight } from 'lucide-react-native';
 
 import { useExercises } from '../hooks/useExercises';
 import { ExerciseItem } from '../services/exercises.service';
@@ -28,6 +28,7 @@ const MUSCLE_GROUPS = [
 ];
 
 export const ExercisesOrganism: React.FC = () => {
+  const insets = useSafeAreaInsets();
   const {
     exercises,
     loading,
@@ -49,12 +50,19 @@ export const ExercisesOrganism: React.FC = () => {
 
   const renderExerciseItem = ({ item, index }: { item: ExerciseItem; index: number }) => (
     <Animated.View
-      entering={FadeInDown.delay(Math.min(index * 40, 400)).duration(400)}
+      entering={FadeInDown.delay(Math.min(index * 35, 350)).duration(350)}
       style={styles.card}
     >
-      <View style={styles.cardHeader}>
+      {/* Motorsport M-Tricolor Left Edge Accent Stripe */}
+      <View style={styles.cardStripe}>
+        <View style={[styles.stripePart, { backgroundColor: Colors.racingRed }]} />
+        <View style={[styles.stripePart, { backgroundColor: Colors.motorsportBlue }]} />
+        <View style={[styles.stripePart, { backgroundColor: Colors.electricCyan }]} />
+      </View>
+
+      <View style={styles.cardInner}>
         <View style={styles.cardIconCircle}>
-          <Dumbbell size={18} color={Colors.racingRed} />
+          <Dumbbell size={16} color={Colors.racingRed} />
         </View>
 
         <View style={styles.cardTitleContainer}>
@@ -67,12 +75,16 @@ export const ExercisesOrganism: React.FC = () => {
           label={item.targetMuscle.toUpperCase()}
           variant={item.targetMuscle === selectedMuscle ? 'primary' : 'dark'}
         />
+
+        <ChevronRight size={16} color={Colors.textMuted} style={styles.chevron} />
       </View>
     </Animated.View>
   );
 
+  const topInsetPadding = Math.max(insets.top + 8, 20);
+
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={[styles.container, { paddingTop: topInsetPadding }]}>
       <View style={styles.headerWrapper}>
         <ScreenHeader
           titleHighlight="Exercises"
@@ -111,8 +123,8 @@ export const ExercisesOrganism: React.FC = () => {
               >
                 <Typography
                   variant="caption"
-                  style={styles.chipText}
-                  color={isSelected ? Colors.textInverse : Colors.darkCarbon}
+                  style={[styles.chipText, isSelected && styles.activeChipText]}
+                  color={isSelected ? Colors.textInverse : Colors.textPrimary}
                 >
                   {muscle}
                 </Typography>
@@ -156,7 +168,7 @@ export const ExercisesOrganism: React.FC = () => {
           }
         />
       )}
-    </SafeAreaView>
+    </View>
   );
 };
 
@@ -167,60 +179,79 @@ const styles = StyleSheet.create({
   },
   headerWrapper: {
     paddingHorizontal: 20,
-    paddingTop: 16,
   },
   screenHeader: {
-    marginBottom: 16,
+    marginBottom: 12,
   },
   searchInputContainer: {
     marginBottom: 12,
   },
   chipsContainer: {
-    paddingBottom: 12,
+    paddingBottom: 14,
     gap: 8,
   },
   chip: {
     paddingHorizontal: 14,
-    paddingVertical: 6,
+    paddingVertical: 7,
     borderRadius: 20,
     backgroundColor: Colors.surface,
     borderWidth: 1,
     borderColor: Colors.border,
   },
   activeChip: {
-    backgroundColor: Colors.racingRed,
+    backgroundColor: Colors.darkCarbon,
     borderColor: Colors.racingRed,
+    borderWidth: 1.5,
   },
   chipText: {
-    fontFamily: 'Inter_600SemiBold',
+    fontFamily: 'Poppins_500Medium',
     fontSize: 12,
+  },
+  activeChipText: {
+    fontFamily: 'Inter_700Bold',
+    color: Colors.electricCyan,
   },
   listContent: {
     paddingHorizontal: 20,
-    paddingBottom: 100,
-    paddingTop: 8,
-    gap: 12,
+    paddingBottom: 110,
+    paddingTop: 4,
+    gap: 10,
   },
   card: {
     backgroundColor: Colors.surfaceElevated,
     borderRadius: 14,
-    padding: 16,
     borderWidth: 1,
     borderColor: Colors.border,
     shadowColor: Colors.cardShadow,
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.6,
+    shadowOpacity: 0.5,
     shadowRadius: 8,
     elevation: 3,
+    overflow: 'hidden',
+    position: 'relative',
   },
-  cardHeader: {
+  cardStripe: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    bottom: 0,
+    width: 4,
+    flexDirection: 'column',
+  },
+  stripePart: {
+    flex: 1,
+  },
+  cardInner: {
     flexDirection: 'row',
     alignItems: 'center',
+    paddingVertical: 14,
+    paddingHorizontal: 14,
+    paddingLeft: 18,
   },
   cardIconCircle: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 34,
+    height: 34,
+    borderRadius: 17,
     backgroundColor: Colors.surface,
     alignItems: 'center',
     justifyContent: 'center',
@@ -233,7 +264,12 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   exerciseName: {
-    fontSize: 15,
+    fontSize: 14,
+    fontFamily: 'Poppins_600SemiBold',
+    color: Colors.darkCarbon,
+  },
+  chevron: {
+    marginLeft: 6,
   },
   centerContainer: {
     flex: 1,

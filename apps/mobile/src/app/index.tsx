@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
-import { View, StyleSheet, SafeAreaView, ActivityIndicator } from 'react-native';
+import { View, StyleSheet, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
 import { LogOut, Gauge } from 'lucide-react-native';
 
@@ -10,6 +11,7 @@ import { Typography, Button, Badge } from '@/components/ui';
 
 export default function HomeScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { user, isAuthenticated, isLoading, logout } = useAuth();
 
   useEffect(() => {
@@ -35,8 +37,10 @@ export default function HomeScreen() {
     router.replace('/(auth)/login' as any);
   };
 
+  const topInsetPadding = Math.max(insets.top + 16, 24);
+
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={[styles.container, { paddingTop: topInsetPadding }]}>
       <View style={styles.content}>
         {/* Simple Welcome Hub Header */}
         <Animated.View entering={FadeInUp.duration(600).springify()} style={styles.header}>
@@ -67,7 +71,7 @@ export default function HomeScreen() {
           />
         </Animated.View>
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 
