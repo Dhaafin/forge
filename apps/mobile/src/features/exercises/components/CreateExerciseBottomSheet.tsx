@@ -209,7 +209,7 @@ export const CreateExerciseBottomSheet: React.FC<CreateExerciseBottomSheetProps>
                 <View style={styles.actionRow}>
                   <Button
                     title="CANCEL"
-                    variant="ghost"
+                    variant="outline"
                     onPress={handleClose}
                     style={styles.cancelBtn}
                   />
