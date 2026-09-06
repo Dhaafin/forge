@@ -26,6 +26,10 @@ npm-debug.*
 yarn-debug.*
 yarn-error.*
 
+# lockfiles (pnpm monorepo — only pnpm-lock.yaml at root is valid)
+package-lock.json
+yarn.lock
+
 # macOS
 .DS_Store
 *.pem
