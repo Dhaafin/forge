@@ -11,7 +11,7 @@ import {
   clearAuthTokens,
   StoredUser,
 } from '@/lib/storage';
-import { apiFetch } from '@/lib/api';
+import { authService, LoginCredentials } from '@/services/auth.service';
 
 export interface AuthContextType {
   user: StoredUser | null;
@@ -19,7 +19,7 @@ export interface AuthContextType {
   isAuthenticated: boolean;
   rememberMe: boolean;
   setRememberMe: (value: boolean) => void;
-  login: (credentials: { username: string; password: string }, remember: boolean) => Promise<void>;
+  login: (credentials: LoginCredentials, remember: boolean) => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -51,15 +51,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             setUser(cachedUser);
           }
 
-          // Verify or refresh user profile
+          // Verify or refresh user profile via authService
           try {
-            const res = await apiFetch('/api/auth/me');
+            const res = await authService.getCurrentUser();
             if (res.user) {
               setUser(res.user);
               await setStoredUser(res.user);
             }
           } catch (err) {
-            // Token might be expired, apiFetch interceptor will try refresh
             console.log('Session validation info:', err);
           }
         }
@@ -73,20 +72,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     loadSession();
   }, []);
 
-  const login = async (
-    credentials: { username: string; password: string },
-    remember: boolean
-  ) => {
+  const login = async (credentials: LoginCredentials, remember: boolean) => {
     setIsLoading(true);
     try {
-      const response = await apiFetch('/api/auth/login', {
-        method: 'POST',
-        body: JSON.stringify(credentials),
-      });
+      const response = await authService.login(credentials);
 
       if (response.token && response.user) {
         await setAccessToken(response.token);
-        // Save refresh token (same token or dedicated refresh token)
         await setRefreshToken(response.token);
         await setStoredUser(response.user);
         await saveRememberMePref(remember);
