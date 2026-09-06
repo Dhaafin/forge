@@ -15,6 +15,7 @@ import {
   Poppins_600SemiBold,
 } from '@expo-google-fonts/poppins';
 import { AuthProvider } from '@/ctx/auth-context';
+import { FlashMessageProvider } from '@/ctx/flash-message-context';
 import { ActionBar } from '@/components/navigation/ActionBar';
 
 SplashScreen.preventAutoHideAsync();
@@ -42,20 +43,22 @@ export default function RootLayout() {
 
   return (
     <AuthProvider>
-      <View style={styles.container}>
-        <Stack
-          screenOptions={{
-            headerShown: false,
-            animation: 'fade',
-          }}
-        >
-          <Stack.Screen name="(auth)/login" options={{ headerShown: false }} />
-          <Stack.Screen name="index" options={{ headerShown: false }} />
-          <Stack.Screen name="exercises" options={{ headerShown: false }} />
-          <Stack.Screen name="session" options={{ headerShown: false }} />
-        </Stack>
-        <ActionBar />
-      </View>
+      <FlashMessageProvider>
+        <View style={styles.container}>
+          <Stack
+            screenOptions={{
+              headerShown: false,
+              animation: 'fade',
+            }}
+          >
+            <Stack.Screen name="(auth)/login" options={{ headerShown: false }} />
+            <Stack.Screen name="index" options={{ headerShown: false }} />
+            <Stack.Screen name="exercises" options={{ headerShown: false }} />
+            <Stack.Screen name="session" options={{ headerShown: false }} />
+          </Stack>
+          <ActionBar />
+        </View>
+      </FlashMessageProvider>
     </AuthProvider>
   );
 }
