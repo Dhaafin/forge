@@ -75,10 +75,7 @@ export const ExercisesOrganism: React.FC = () => {
     <SafeAreaView style={styles.container}>
       <View style={styles.headerWrapper}>
         <ScreenHeader
-          badgeLabel="EXERCISES DATABASE"
-          icon={<Dumbbell size={32} color={Colors.racingRed} />}
-          titlePrefix="FORGE"
-          titleHighlight="EXERCISES"
+          titleHighlight="Exercises"
           subtitle="Explore targeting movements for your workout programs"
           containerStyle={styles.screenHeader}
         />

@@ -6,9 +6,8 @@ import { Badge } from './Badge';
 import { Colors } from '@/theme/colors';
 
 export interface ScreenHeaderProps {
-  badgeLabel: string;
-  icon?: React.ReactNode;
-  titlePrefix: string;
+  badgeLabel?: string;
+  titlePrefix?: string;
   titleHighlight?: string;
   subtitle?: string;
   containerStyle?: ViewStyle;
@@ -16,7 +15,6 @@ export interface ScreenHeaderProps {
 
 export const ScreenHeader: React.FC<ScreenHeaderProps> = ({
   badgeLabel,
-  icon,
   titlePrefix,
   titleHighlight,
   subtitle,
@@ -24,26 +22,24 @@ export const ScreenHeader: React.FC<ScreenHeaderProps> = ({
 }) => {
   return (
     <Animated.View
-      entering={FadeInUp.duration(600).springify()}
+      entering={FadeInUp.duration(400).springify()}
       style={[styles.headerContainer, containerStyle]}
     >
-      <View style={styles.badgeRow}>
-        <Badge label={badgeLabel} variant="primary" />
+      <View style={styles.topRow}>
+        {badgeLabel && <Badge label={badgeLabel} variant="primary" />}
       </View>
 
-      {icon && <View style={styles.logoCircle}>{icon}</View>}
-
-      <Typography variant="h1" align="center" style={styles.title}>
-        {titlePrefix}{' '}
+      <Typography variant="h2" style={styles.title}>
+        {titlePrefix ? `${titlePrefix} ` : ''}
         {titleHighlight && (
-          <Typography variant="h1" color={Colors.racingRed}>
+          <Typography variant="h2" color={Colors.racingRed}>
             {titleHighlight}
           </Typography>
         )}
       </Typography>
 
       {subtitle && (
-        <Typography variant="subtitle" align="center" style={styles.subtitle}>
+        <Typography variant="caption" style={styles.subtitle}>
           {subtitle}
         </Typography>
       )}
@@ -53,38 +49,22 @@ export const ScreenHeader: React.FC<ScreenHeaderProps> = ({
 
 const styles = StyleSheet.create({
   headerContainer: {
-    alignItems: 'center',
-    marginBottom: 24,
+    marginBottom: 12,
     width: '100%',
   },
-  badgeRow: {
-    marginBottom: 16,
-  },
-  logoCircle: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: Colors.surface,
-    borderWidth: 2,
-    borderColor: Colors.racingRed,
+  topRow: {
+    marginBottom: 6,
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 16,
-    shadowColor: Colors.racingRed,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 4,
   },
   title: {
-    fontSize: 28,
-    letterSpacing: -0.5,
-    marginBottom: 6,
+    fontSize: 22,
+    letterSpacing: -0.3,
     fontFamily: 'Inter_900Black',
+    marginBottom: 2,
   },
   subtitle: {
-    fontSize: 13,
-    lineHeight: 18,
-    maxWidth: 290,
+    fontSize: 12,
+    color: Colors.textSecondary,
   },
 });
