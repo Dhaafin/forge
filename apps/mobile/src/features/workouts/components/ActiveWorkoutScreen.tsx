@@ -127,11 +127,6 @@ export const ActiveWorkoutScreen: React.FC<ActiveWorkoutScreenProps> = ({
   return (
     <Modal visible={visible} animationType="slide" transparent={false} onRequestClose={handleDiscard}>
       <View style={[styles.container, { paddingTop: topPadding }]}>
-        {/* Sheet Top Handle Bar */}
-        <View style={styles.sheetHandleContainer}>
-          <View style={styles.sheetHandle} />
-        </View>
-
         {/* Top Header Navigation */}
         <View style={styles.topHeader}>
           <TouchableOpacity style={styles.iconBtn} activeOpacity={0.7} onPress={handleDiscard}>
@@ -408,26 +403,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.background,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    overflow: 'hidden',
-  },
-  sheetHandleContainer: {
-    alignItems: 'center',
-    paddingTop: 8,
-    paddingBottom: 4,
-  },
-  sheetHandle: {
-    width: 36,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: Colors.border,
   },
   topHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
-    paddingBottom: 10,
+    paddingVertical: 10,
     gap: 10,
   },
   iconBtn: {

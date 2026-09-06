@@ -361,7 +361,7 @@ export const ExercisePickerBottomSheet: React.FC<ExercisePickerBottomSheetProps>
             ) : (
               <FlatList
                 data={exercises}
-                keyExtractor={(item) => item.id}
+                keyExtractor={(item, index) => `${item.id}-${index}`}
                 renderItem={renderExerciseRow}
                 contentContainerStyle={styles.listContent}
                 showsVerticalScrollIndicator={false}

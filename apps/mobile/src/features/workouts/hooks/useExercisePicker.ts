@@ -47,7 +47,11 @@ export function useExercisePicker(visible: boolean) {
       if (isNewSearch) {
         setExercises(newItems);
       } else {
-        setExercises((prev) => [...prev, ...newItems]);
+        setExercises((prev) => {
+          const existingIds = new Set(prev.map((item) => item.id));
+          const uniqueNew = newItems.filter((item) => !existingIds.has(item.id));
+          return [...prev, ...uniqueNew];
+        });
       }
 
       setHasMore(res.meta ? res.meta.hasMore : newItems.length >= PAGE_SIZE);
