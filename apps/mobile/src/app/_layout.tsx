@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { View, StyleSheet } from 'react-native';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import {
@@ -14,6 +15,7 @@ import {
   Poppins_600SemiBold,
 } from '@expo-google-fonts/poppins';
 import { AuthProvider } from '@/ctx/auth-context';
+import { ActionBar } from '@/components/navigation/ActionBar';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -40,15 +42,26 @@ export default function RootLayout() {
 
   return (
     <AuthProvider>
-      <Stack
-        screenOptions={{
-          headerShown: false,
-          animation: 'fade',
-        }}
-      >
-        <Stack.Screen name="(auth)/login" options={{ headerShown: false }} />
-        <Stack.Screen name="index" options={{ headerShown: false }} />
-      </Stack>
+      <View style={styles.container}>
+        <Stack
+          screenOptions={{
+            headerShown: false,
+            animation: 'fade',
+          }}
+        >
+          <Stack.Screen name="(auth)/login" options={{ headerShown: false }} />
+          <Stack.Screen name="index" options={{ headerShown: false }} />
+          <Stack.Screen name="workouts" options={{ headerShown: false }} />
+          <Stack.Screen name="session" options={{ headerShown: false }} />
+        </Stack>
+        <ActionBar />
+      </View>
     </AuthProvider>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+});
