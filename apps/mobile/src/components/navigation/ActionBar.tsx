@@ -1,6 +1,7 @@
 import React from 'react';
-import { View, StyleSheet, TouchableOpacity, Platform } from 'react-native';
+import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { usePathname, useRouter } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Gauge, Dumbbell, Timer } from 'lucide-react-native';
 import { Typography } from '@/components/ui';
 import { Colors } from '@/theme/colors';
@@ -36,6 +37,7 @@ const NAV_ITEMS: NavItem[] = [
 export const ActionBar: React.FC = () => {
   const pathname = usePathname();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
 
   // Hide ActionBar on auth screens
   if (pathname.includes('/login') || pathname.includes('(auth)')) {
@@ -46,8 +48,11 @@ export const ActionBar: React.FC = () => {
     router.replace(route as any);
   };
 
+  // Dynamically calculate bottom padding from native safe area insets
+  const dynamicBottomPadding = Math.max(insets.bottom, 16);
+
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingBottom: dynamicBottomPadding }]}>
       <View style={styles.bar}>
         {NAV_ITEMS.map((item) => {
           const isActive =
@@ -92,8 +97,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.background,
     borderTopWidth: 1,
     borderTopColor: Colors.border,
-    paddingBottom: Platform.OS === 'ios' ? 24 : 12,
-    paddingTop: 8,
+    paddingTop: 10,
     shadowColor: Colors.cardShadow,
     shadowOffset: { width: 0, height: -4 },
     shadowOpacity: 0.1,
@@ -115,7 +119,7 @@ const styles = StyleSheet.create({
   },
   activeStripe: {
     position: 'absolute',
-    top: -8,
+    top: -10,
     width: 24,
     height: 3,
     backgroundColor: Colors.racingRed,
