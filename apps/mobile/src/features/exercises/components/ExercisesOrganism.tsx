@@ -24,7 +24,6 @@ const MUSCLE_GROUPS = [
   'Arms',
   'Shoulders',
   'Core',
-  'Calves',
 ];
 
 export const ExercisesOrganism: React.FC = () => {
@@ -72,7 +71,7 @@ export const ExercisesOrganism: React.FC = () => {
         </View>
 
         <Badge
-          label={item.targetMuscle.toUpperCase()}
+          label={item.targetMuscle}
           variant={item.targetMuscle === selectedMuscle ? 'primary' : 'dark'}
         />
 
@@ -81,7 +80,7 @@ export const ExercisesOrganism: React.FC = () => {
     </Animated.View>
   );
 
-  const topInsetPadding = Math.max(insets.top + 8, 20);
+  const topInsetPadding = Math.max(insets.top + 16, 28);
 
   return (
     <View style={[styles.container, { paddingTop: topInsetPadding }]}>
@@ -101,7 +100,7 @@ export const ExercisesOrganism: React.FC = () => {
           containerStyle={styles.searchInputContainer}
         />
 
-        {/* Muscle Filter Horizontal Chips */}
+        {/* Motorsport Slanted Filter Chips */}
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -115,18 +114,18 @@ export const ExercisesOrganism: React.FC = () => {
               <TouchableOpacity
                 key={muscle}
                 style={[
-                  styles.chip,
-                  isSelected && styles.activeChip,
+                  styles.slantedChip,
+                  isSelected && styles.activeSlantedChip,
                 ]}
                 activeOpacity={0.8}
                 onPress={() => handleSelectMuscle(muscle)}
               >
                 <Typography
                   variant="caption"
-                  style={isSelected ? [styles.chipText, styles.activeChipText] : styles.chipText}
-                  color={isSelected ? Colors.textInverse : Colors.textPrimary}
+                  style={styles.chipText}
+                  color={isSelected ? Colors.electricCyan : Colors.textPrimary}
                 >
-                  {muscle}
+                  {muscle.toUpperCase()}
                 </Typography>
               </TouchableOpacity>
             );
@@ -190,26 +189,29 @@ const styles = StyleSheet.create({
     paddingBottom: 14,
     gap: 8,
   },
-  chip: {
+  slantedChip: {
     paddingHorizontal: 14,
     paddingVertical: 7,
-    borderRadius: 20,
+    borderRadius: 6,
     backgroundColor: Colors.surface,
     borderWidth: 1,
     borderColor: Colors.border,
+    transform: [{ skewX: '-10deg' }],
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  activeChip: {
+  activeSlantedChip: {
     backgroundColor: Colors.darkCarbon,
     borderColor: Colors.racingRed,
     borderWidth: 1.5,
   },
   chipText: {
-    fontFamily: 'Poppins_500Medium',
-    fontSize: 12,
-  },
-  activeChipText: {
     fontFamily: 'Inter_700Bold',
-    color: Colors.electricCyan,
+    fontSize: 11,
+    letterSpacing: 0.5,
+    includeFontPadding: false,
+    textAlignVertical: 'center',
+    transform: [{ skewX: '10deg' }],
   },
   listContent: {
     paddingHorizontal: 20,
@@ -262,11 +264,14 @@ const styles = StyleSheet.create({
   cardTitleContainer: {
     flex: 1,
     marginRight: 8,
+    justifyContent: 'center',
   },
   exerciseName: {
     fontSize: 14,
+    lineHeight: 18,
     fontFamily: 'Poppins_600SemiBold',
     color: Colors.darkCarbon,
+    includeFontPadding: false,
   },
   chevron: {
     marginLeft: 6,

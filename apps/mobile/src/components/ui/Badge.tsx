@@ -46,15 +46,20 @@ export const Badge: React.FC<BadgeProps> = ({ label, variant = 'primary', style 
 const styles = StyleSheet.create({
   container: {
     paddingHorizontal: 10,
-    paddingVertical: 4,
+    paddingVertical: 5,
     borderRadius: 4,
     alignSelf: 'flex-start',
+    alignItems: 'center',
+    justifyContent: 'center',
     transform: [{ skewX: '-10deg' }],
   },
   text: {
     fontFamily: 'Inter_700Bold',
     fontSize: 10,
-    letterSpacing: 1.2,
+    lineHeight: 12,
+    letterSpacing: 1,
+    includeFontPadding: false,
+    textAlignVertical: 'center',
     transform: [{ skewX: '10deg' }],
   },
 });
