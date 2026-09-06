@@ -1,16 +1,26 @@
 import { Platform } from 'react-native';
 
-/** Production Vercel live backend URL */
-export const PRODUCTION_API_URL = 'https://forge-tau-black.vercel.app';
+/** Resolve base API URL strictly from environment variables */
+function getApiBaseUrl(): string {
+  const envUrl = process.env.EXPO_PUBLIC_API_URL;
+  if (envUrl) {
+    return envUrl;
+  }
 
-/** Local Dev Fallback (Android emulator: 10.0.2.2, iOS/Web: localhost) */
-export const LOCAL_DEV_API_URL =
-  Platform.OS === 'android' ? 'http://10.0.2.2:3000' : 'http://localhost:3000';
+  if (__DEV__) {
+    // Development fallback only
+    return Platform.OS === 'android' ? 'http://10.0.2.2:3000' : 'http://localhost:3000';
+  }
 
-/** Centralized API Configuration for Mobile App */
+  throw new Error(
+    'EXPO_PUBLIC_API_URL environment variable is not defined. Please set it in .env.local or build environment.'
+  );
+}
+
+/** Centralized API Configuration driven 100% by environment variables */
 export const ApiConfig = {
-  baseUrl: process.env.EXPO_PUBLIC_API_URL || PRODUCTION_API_URL,
-  timeoutMs: 12000, // 12s timeout for remote cloud requests
+  baseUrl: getApiBaseUrl(),
+  timeoutMs: 12000, // 12s timeout for network requests
   endpoints: {
     auth: {
       login: '/api/auth/login',
