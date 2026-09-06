@@ -119,7 +119,7 @@ export const ActiveWorkoutOrganism: React.FC<ActiveWorkoutOrganismProps> = ({
       {/* Action Button: Add Exercise under HUD */}
       <View style={styles.addExerciseSubHeader}>
         <Button
-          title="+ ADD EXERCISE"
+          title="ADD EXERCISE"
           variant="outline"
           icon={<Plus size={16} color={Colors.racingRed} />}
           onPress={() => setPickerVisible(true)}
@@ -186,15 +186,15 @@ const styles = StyleSheet.create({
   },
   addExerciseSubHeader: {
     paddingHorizontal: 16,
-    paddingTop: 10,
-    paddingBottom: 4,
+    paddingTop: 6,
+    paddingBottom: 2,
   },
   addExerciseBtnStyle: {
     width: '100%',
   },
   scrollContent: {
     paddingHorizontal: 16,
-    paddingTop: 12,
+    paddingTop: 8,
     gap: 12,
   },
   emptyState: {

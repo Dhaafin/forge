@@ -38,8 +38,8 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.surfaceElevated,
     borderTopWidth: 1,
     borderTopColor: Colors.border,
-    paddingHorizontal: 0,
-    paddingTop: 0,
+    paddingHorizontal: 16,
+    paddingTop: 12,
     shadowColor: '#000000',
     shadowOffset: { width: 0, height: -4 },
     shadowOpacity: 0.06,
@@ -48,7 +48,5 @@ const styles = StyleSheet.create({
   },
   finishBtn: {
     width: '100%',
-    borderRadius: 0,
-    height: 52,
   },
 });
