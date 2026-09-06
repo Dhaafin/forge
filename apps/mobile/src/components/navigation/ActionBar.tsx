@@ -74,10 +74,7 @@ export const ActionBar: React.FC = () => {
 
               <Typography
                 variant="caption"
-                style={[
-                  styles.tabLabel,
-                  isActive ? styles.activeTabLabel : undefined,
-                ]}
+                style={isActive ? [styles.tabLabel, styles.activeTabLabel] : styles.tabLabel}
                 color={isActive ? activeColor : inactiveColor}
               >
                 {item.label}
