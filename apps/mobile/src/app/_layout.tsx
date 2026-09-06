@@ -51,7 +51,7 @@ export default function RootLayout() {
         >
           <Stack.Screen name="(auth)/login" options={{ headerShown: false }} />
           <Stack.Screen name="index" options={{ headerShown: false }} />
-          <Stack.Screen name="workouts" options={{ headerShown: false }} />
+          <Stack.Screen name="exercises" options={{ headerShown: false }} />
           <Stack.Screen name="session" options={{ headerShown: false }} />
         </Stack>
         <ActionBar />

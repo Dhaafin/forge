@@ -21,9 +21,9 @@ const NAV_ITEMS: NavItem[] = [
     icon: (color, size) => <Gauge size={size} color={color} />,
   },
   {
-    key: 'workouts',
-    label: 'Workouts',
-    route: '/workouts',
+    key: 'exercises',
+    label: 'Exercises',
+    route: '/exercises',
     icon: (color, size) => <Dumbbell size={size} color={color} />,
   },
   {
