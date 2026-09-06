@@ -8,11 +8,21 @@ export function useExercises() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [selectedMuscle, setSelectedMuscle] = useState<string | null>(null);
   const [meta, setMeta] = useState<{ total: number; hasMore: boolean }>({
     total: 0,
     hasMore: false,
   });
+
+  // Debounce search value by 350ms
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search);
+    }, 350);
+
+    return () => clearTimeout(timer);
+  }, [search]);
 
   const loadExercises = useCallback(async () => {
     setLoading(true);
@@ -21,7 +31,7 @@ export function useExercises() {
       const res = await exercisesService.getExercises({
         limit: DEFAULT_LIMIT,
         offset: 0,
-        search: search.trim() || undefined,
+        search: debouncedSearch.trim() || undefined,
         targetMuscle: selectedMuscle || undefined,
       });
 
@@ -36,9 +46,9 @@ export function useExercises() {
     } finally {
       setLoading(false);
     }
-  }, [search, selectedMuscle]);
+  }, [debouncedSearch, selectedMuscle]);
 
-  // Fetch once on mount and when search/muscle filters change
+  // Fetch when debouncedSearch or muscle filter changes
   useEffect(() => {
     loadExercises();
   }, [loadExercises]);
@@ -55,3 +65,4 @@ export function useExercises() {
     refetch: loadExercises,
   };
 }
+
