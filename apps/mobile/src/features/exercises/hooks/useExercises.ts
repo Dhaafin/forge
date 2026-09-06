@@ -1,11 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
-import {
-  exercisesService,
-  ExerciseItem,
-  ExerciseQuery,
-} from '../services/exercises.service';
+import { exercisesService, ExerciseItem } from '../services/exercises.service';
 
-export function useExercises(initialQuery: ExerciseQuery = { limit: 50, offset: 0 }) {
+const DEFAULT_LIMIT = 50;
+
+export function useExercises() {
   const [exercises, setExercises] = useState<ExerciseItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -16,12 +14,13 @@ export function useExercises(initialQuery: ExerciseQuery = { limit: 50, offset: 
     hasMore: false,
   });
 
-  const fetchExercises = useCallback(async () => {
+  const loadExercises = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
       const res = await exercisesService.getExercises({
-        ...initialQuery,
+        limit: DEFAULT_LIMIT,
+        offset: 0,
         search: search.trim() || undefined,
         targetMuscle: selectedMuscle || undefined,
       });
@@ -37,11 +36,12 @@ export function useExercises(initialQuery: ExerciseQuery = { limit: 50, offset: 
     } finally {
       setLoading(false);
     }
-  }, [search, selectedMuscle, initialQuery]);
+  }, [search, selectedMuscle]);
 
+  // Fetch once on mount and when search/muscle filters change
   useEffect(() => {
-    fetchExercises();
-  }, [fetchExercises]);
+    loadExercises();
+  }, [loadExercises]);
 
   return {
     exercises,
@@ -52,6 +52,6 @@ export function useExercises(initialQuery: ExerciseQuery = { limit: 50, offset: 
     selectedMuscle,
     setSelectedMuscle,
     meta,
-    refetch: fetchExercises,
+    refetch: loadExercises,
   };
 }
