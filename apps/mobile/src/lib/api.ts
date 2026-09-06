@@ -118,7 +118,18 @@ export async function apiFetch<T = any>(
     const data = await response.json().catch(() => ({}));
 
     if (!response.ok) {
-      const errorMessage = data?.error || data?.message || `Request failed with status ${response.status}`;
+      let errorMessage = `Request failed with status ${response.status}`;
+      if (typeof data?.detail === 'string') {
+        errorMessage = data.detail;
+      } else if (Array.isArray(data?.detail)) {
+        errorMessage = data.detail
+          .map((err: any) => (err.loc ? `${err.loc.slice(1).join('.')}: ${err.msg}` : err.msg || JSON.stringify(err)))
+          .join(', ');
+      } else if (data?.error) {
+        errorMessage = typeof data.error === 'string' ? data.error : JSON.stringify(data.error);
+      } else if (data?.message) {
+        errorMessage = typeof data.message === 'string' ? data.message : JSON.stringify(data.message);
+      }
       throw new Error(errorMessage);
     }
 
