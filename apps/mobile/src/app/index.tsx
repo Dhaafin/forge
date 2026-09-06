@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { View, StyleSheet, SafeAreaView, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
-import { Gauge, LogOut, UserCheck, Activity, ShieldCheck } from 'lucide-react-native';
+import { LogOut, UserCheck, Activity, ShieldCheck } from 'lucide-react-native';
 
 import { useAuth } from '@/ctx/auth-context';
 import { Colors } from '@/theme/colors';
@@ -14,7 +14,7 @@ export default function HomeScreen() {
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
-      router.replace('/(auth)/login');
+      router.replace('/(auth)/login' as any);
     }
   }, [isLoading, isAuthenticated]);
 
@@ -32,7 +32,7 @@ export default function HomeScreen() {
 
   const handleLogout = async () => {
     await logout();
-    router.replace('/(auth)/login');
+    router.replace('/(auth)/login' as any);
   };
 
   return (
