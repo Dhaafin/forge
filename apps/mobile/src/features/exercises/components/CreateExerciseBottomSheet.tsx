@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   StyleSheet,
@@ -9,7 +9,15 @@ import {
   ScrollView,
   PanResponder,
 } from 'react-native';
-import Animated, { FadeInUp, FadeOutDown } from 'react-native-reanimated';
+import Animated, {
+  SlideInDown,
+  SlideOutDown,
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+  withTiming,
+  runOnJS,
+} from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Dumbbell, X, Plus } from 'lucide-react-native';
 
@@ -35,7 +43,7 @@ export interface CreateExerciseBottomSheetProps {
   onSuccess?: (exercise: ExerciseItem) => void;
 }
 
-/** Lightweight & Modern Create Exercise Bottom Sheet with Native Drag-Down Dismiss */
+/** Lightweight & Modern Draggable Create Exercise Bottom Sheet */
 export const CreateExerciseBottomSheet: React.FC<CreateExerciseBottomSheetProps> = ({
   visible,
   onClose,
@@ -48,10 +56,19 @@ export const CreateExerciseBottomSheet: React.FC<CreateExerciseBottomSheetProps>
   const [targetMuscle, setTargetMuscle] = useState<string>('Chest');
   const [submitting, setSubmitting] = useState(false);
 
+  const translateY = useSharedValue(0);
+
+  useEffect(() => {
+    if (visible) {
+      translateY.value = 0;
+    }
+  }, [visible, translateY]);
+
   const resetForm = () => {
     setName('');
     setTargetMuscle('Chest');
     setSubmitting(false);
+    translateY.value = 0;
   };
 
   const handleClose = () => {
@@ -59,18 +76,31 @@ export const CreateExerciseBottomSheet: React.FC<CreateExerciseBottomSheetProps>
     onClose();
   };
 
-  // Native PanResponder for drag-to-dismiss handle
+  // Reanimated + PanResponder for 60fps drag-to-dismiss gesture
   const panResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
       onMoveShouldSetPanResponder: (_, gestureState) => gestureState.dy > 5,
+      onPanResponderMove: (_, gestureState) => {
+        if (gestureState.dy > 0) {
+          translateY.value = gestureState.dy;
+        }
+      },
       onPanResponderRelease: (_, gestureState) => {
-        if (gestureState.dy > 50) {
-          handleClose();
+        if (gestureState.dy > 60 || gestureState.vy > 0.5) {
+          translateY.value = withTiming(400, { duration: 180 }, () => {
+            runOnJS(handleClose)();
+          });
+        } else {
+          translateY.value = withSpring(0, { damping: 18, stiffness: 200 });
         }
       },
     })
   ).current;
+
+  const animatedDragStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: translateY.value }],
+  }));
 
   const handleSubmit = async () => {
     Keyboard.dismiss();
@@ -121,14 +151,15 @@ export const CreateExerciseBottomSheet: React.FC<CreateExerciseBottomSheetProps>
           />
 
           <Animated.View
-            entering={FadeInUp.duration(200)}
-            exiting={FadeOutDown.duration(200)}
+            entering={SlideInDown.duration(250)}
+            exiting={SlideOutDown.duration(200)}
             style={[
               styles.sheet,
               { paddingBottom: Math.max(insets.bottom + 16, 24) },
+              animatedDragStyle,
             ]}
           >
-            {/* Draggable Top Handle */}
+            {/* Draggable Top Handle Bar */}
             <View style={styles.handleContainer} {...panResponder.panHandlers}>
               <View style={styles.handle} />
             </View>
@@ -254,11 +285,12 @@ const styles = StyleSheet.create({
   },
   handleContainer: {
     alignItems: 'center',
-    paddingVertical: 12,
+    paddingVertical: 14,
     marginHorizontal: -20,
+    marginTop: -8,
   },
   handle: {
-    width: 40,
+    width: 44,
     height: 5,
     borderRadius: 2.5,
     backgroundColor: Colors.border,

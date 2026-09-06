@@ -84,8 +84,6 @@ export const ExercisesOrganism: React.FC = () => {
   );
 
   const topInsetPadding = Math.max(insets.top + 16, 28);
-  // Calculate dynamic bottom inset position for FAB right above ActionBar
-  const fabBottomPadding = Math.max(insets.bottom + 76, 92);
 
   return (
     <View style={[styles.container, { paddingTop: topInsetPadding }]}>
@@ -169,10 +167,7 @@ export const ExercisesOrganism: React.FC = () => {
           data={exercises}
           keyExtractor={(item) => item.id}
           renderItem={renderExerciseItem}
-          contentContainerStyle={[
-            styles.listContent,
-            { paddingBottom: fabBottomPadding + 60 },
-          ]}
+          contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
           ListEmptyComponent={
             <View style={styles.centerContainer}>
@@ -184,9 +179,9 @@ export const ExercisesOrganism: React.FC = () => {
         />
       )}
 
-      {/* Bottom-Right Floating Action Button (FAB) perfectly above ActionBar */}
+      {/* Bottom-Right Floating Action Button (FAB) anchored 16px above ActionBar */}
       <TouchableOpacity
-        style={[styles.fab, { bottom: fabBottomPadding }]}
+        style={styles.fab}
         activeOpacity={0.85}
         onPress={() => setCreateSheetVisible(true)}
       >
@@ -242,6 +237,7 @@ const styles = StyleSheet.create({
   listContent: {
     paddingHorizontal: 20,
     paddingTop: 4,
+    paddingBottom: 84,
     gap: 10,
   },
   skeletonList: {
@@ -334,7 +330,8 @@ const styles = StyleSheet.create({
   },
   fab: {
     position: 'absolute',
-    right: 20,
+    right: 16,
+    bottom: 16,
     width: 52,
     height: 52,
     borderRadius: 26,
