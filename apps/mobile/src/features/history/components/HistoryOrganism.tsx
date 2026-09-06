@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   StyleSheet,
@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useRouter, useFocusEffect } from 'expo-router';
 import {
   Calendar,
   Search,
@@ -21,7 +22,6 @@ import {
 import { useWorkoutHistory } from '../hooks/useWorkoutHistory';
 import { WorkoutSessionItem } from '../services/history.service';
 import { RecordModeBottomSheet } from '@/features/workouts/components/RecordModeBottomSheet';
-import { ActiveWorkoutScreen } from '@/features/workouts/components/ActiveWorkoutScreen';
 import { WorkoutMode } from '@/features/workouts/hooks/useActiveWorkout';
 import { Typography, Input, Badge, ScreenHeader, Skeleton } from '@/components/ui';
 import { Colors } from '@/theme/colors';
@@ -50,10 +50,9 @@ function formatDate(dateStr: string): string {
 }
 
 export const HistoryOrganism: React.FC = () => {
+  const router = useRouter();
   const insets = useSafeAreaInsets();
   const [recordSheetVisible, setRecordSheetVisible] = useState(false);
-  const [activeWorkoutVisible, setActiveWorkoutVisible] = useState(false);
-  const [selectedMode, setSelectedMode] = useState<WorkoutMode>('live');
 
   const {
     sessions,
@@ -66,14 +65,20 @@ export const HistoryOrganism: React.FC = () => {
     refetch,
   } = useWorkoutHistory();
 
+  // Auto refetch history on page focus
+  useFocusEffect(
+    useCallback(() => {
+      refetch();
+    }, [refetch])
+  );
+
   const handleSelectWindow = (value: string | null) => {
     setSelectedWindow(selectedWindow === value ? null : value);
   };
 
   const handleStartMode = (mode: WorkoutMode) => {
-    setSelectedMode(mode);
     setRecordSheetVisible(false);
-    setActiveWorkoutVisible(true);
+    router.push({ pathname: '/workout', params: { mode } });
   };
 
   const renderSessionItem = ({ item, index }: { item: WorkoutSessionItem; index: number }) => (
@@ -243,14 +248,6 @@ export const HistoryOrganism: React.FC = () => {
         visible={recordSheetVisible}
         onClose={() => setRecordSheetVisible(false)}
         onSelectMode={handleStartMode}
-      />
-
-      {/* Active Workout Recording Screen */}
-      <ActiveWorkoutScreen
-        visible={activeWorkoutVisible}
-        mode={selectedMode}
-        onClose={() => setActiveWorkoutVisible(false)}
-        onSuccess={() => refetch()}
       />
     </View>
   );

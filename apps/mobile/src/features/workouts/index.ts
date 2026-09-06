@@ -1,3 +1,4 @@
+export * from './components/ActiveWorkoutOrganism';
 export * from './components/ActiveWorkoutScreen';
 export * from './components/RecordModeBottomSheet';
 export * from './components/ExercisePickerBottomSheet';
