@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   TouchableWithoutFeedback,
   Keyboard,
-  ScrollView,
   PanResponder,
 } from 'react-native';
 import Animated, {
@@ -22,8 +21,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Edit3, X, Save } from 'lucide-react-native';
 
 import { exercisesService, ExerciseItem } from '../services/exercises.service';
-import { TARGET_MUSCLES } from './CreateExerciseBottomSheet';
-import { Typography, Input, Button } from '@/components/ui';
+import { ExerciseForm } from './ExerciseForm';
+import { Typography } from '@/components/ui';
 import { useFlashMessage } from '@/ctx/flash-message-context';
 import { Colors } from '@/theme/colors';
 
@@ -42,18 +41,13 @@ export const EditExerciseBottomSheet: React.FC<EditExerciseBottomSheetProps> = (
   onSuccess,
 }) => {
   const insets = useSafeAreaInsets();
-  const { showSuccess, showError, showWarning } = useFlashMessage();
-
-  const [name, setName] = useState('');
-  const [targetMuscle, setTargetMuscle] = useState<string>('Chest');
+  const { showSuccess, showError } = useFlashMessage();
   const [submitting, setSubmitting] = useState(false);
 
   const translateY = useSharedValue(0);
 
   useEffect(() => {
     if (visible && exercise) {
-      setName(exercise.name);
-      setTargetMuscle(exercise.targetMuscle || 'Chest');
       translateY.value = 0;
     }
   }, [visible, exercise, translateY]);
@@ -90,23 +84,13 @@ export const EditExerciseBottomSheet: React.FC<EditExerciseBottomSheetProps> = (
     transform: [{ translateY: translateY.value }],
   }));
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (data: { name: string; targetMuscle: string }) => {
     if (!exercise) return;
     Keyboard.dismiss();
-    const trimmedName = name.trim();
-
-    if (!trimmedName) {
-      showWarning('Exercise name is required.', 'Validation');
-      return;
-    }
-
     setSubmitting(true);
 
     try {
-      const updated = await exercisesService.updateExercise(exercise.id, {
-        name: trimmedName,
-        targetMuscle,
-      });
+      const updated = await exercisesService.updateExercise(exercise.id, data);
 
       showSuccess(`Exercise "${updated.name}" updated!`, 'Success');
       if (onSuccess) {
@@ -177,67 +161,17 @@ export const EditExerciseBottomSheet: React.FC<EditExerciseBottomSheetProps> = (
               </TouchableOpacity>
             </View>
 
-            {/* Form Fields */}
-            <View style={styles.formContainer}>
-              <Input
-                label="EXERCISE NAME"
-                placeholder="e.g., Incline Dumbbell Press"
-                value={name}
-                onChangeText={setName}
-                autoCapitalize="words"
-                autoFocus
-              />
-
-              <Typography variant="label" style={styles.muscleLabel}>
-                TARGET MUSCLE GROUP
-              </Typography>
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.muscleChipsScroll}
-              >
-                {TARGET_MUSCLES.map((muscle) => {
-                  const isSelected = targetMuscle === muscle;
-                  return (
-                    <TouchableOpacity
-                      key={muscle}
-                      style={[
-                        styles.muscleChip,
-                        isSelected && styles.activeMuscleChip,
-                      ]}
-                      activeOpacity={0.8}
-                      onPress={() => setTargetMuscle(muscle)}
-                    >
-                      <Typography
-                        variant="caption"
-                        style={styles.chipText}
-                        color={isSelected ? Colors.textInverse : Colors.textSecondary}
-                      >
-                        {muscle}
-                      </Typography>
-                    </TouchableOpacity>
-                  );
-                })}
-              </ScrollView>
-
-              <View style={styles.actionRow}>
-                <Button
-                  title="CANCEL"
-                  variant="outline"
-                  onPress={handleClose}
-                  disabled={submitting}
-                  style={styles.cancelBtn}
-                />
-                <Button
-                  title="SAVE CHANGES"
-                  variant="secondary"
-                  loading={submitting}
-                  onPress={handleSubmit}
-                  icon={!submitting ? <Save size={16} color="#FFFFFF" /> : undefined}
-                  style={styles.submitBtn}
-                />
-              </View>
-            </View>
+            {/* Form Fields via Shared ExerciseForm Component */}
+            <ExerciseForm
+              initialName={exercise.name}
+              initialTargetMuscle={exercise.targetMuscle || 'Chest'}
+              submitButtonText="SAVE CHANGES"
+              submitButtonIcon={<Save size={16} color="#FFFFFF" />}
+              submitButtonVariant="secondary"
+              submitting={submitting}
+              onCancel={handleClose}
+              onSubmit={handleSubmit}
+            />
           </Animated.View>
         </View>
       </TouchableWithoutFeedback>
@@ -312,49 +246,5 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     backgroundColor: Colors.surface,
   },
-  formContainer: {
-    gap: 14,
-  },
-  muscleLabel: {
-    fontFamily: 'Inter_700Bold',
-    fontSize: 11,
-    letterSpacing: 0.5,
-    color: Colors.textSecondary,
-    marginBottom: 6,
-    marginTop: 4,
-  },
-  muscleChipsScroll: {
-    gap: 8,
-    paddingBottom: 6,
-  },
-  muscleChip: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    backgroundColor: Colors.surface,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  activeMuscleChip: {
-    backgroundColor: Colors.darkCarbon,
-    borderColor: Colors.darkCarbon,
-  },
-  chipText: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 12,
-  },
-  actionRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    marginTop: 10,
-  },
-  cancelBtn: {
-    flex: 1,
-  },
-  submitBtn: {
-    flex: 2,
-  },
 });
+

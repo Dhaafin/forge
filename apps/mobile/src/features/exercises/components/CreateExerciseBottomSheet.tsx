@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   TouchableWithoutFeedback,
   Keyboard,
-  ScrollView,
   PanResponder,
 } from 'react-native';
 import Animated, {
@@ -22,20 +21,10 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Dumbbell, X, Plus } from 'lucide-react-native';
 
 import { exercisesService, ExerciseItem } from '../services/exercises.service';
-import { Typography, Input, Button } from '@/components/ui';
+import { ExerciseForm } from './ExerciseForm';
+import { Typography } from '@/components/ui';
 import { useFlashMessage } from '@/ctx/flash-message-context';
 import { Colors } from '@/theme/colors';
-
-export const TARGET_MUSCLES = [
-  'Chest',
-  'Back',
-  'Legs',
-  'Shoulders',
-  'Arms',
-  'Core',
-  'Cardio',
-  'Full Body',
-] as const;
 
 export interface CreateExerciseBottomSheetProps {
   visible: boolean;
@@ -50,10 +39,7 @@ export const CreateExerciseBottomSheet: React.FC<CreateExerciseBottomSheetProps>
   onSuccess,
 }) => {
   const insets = useSafeAreaInsets();
-  const { showSuccess, showError, showWarning } = useFlashMessage();
-
-  const [name, setName] = useState('');
-  const [targetMuscle, setTargetMuscle] = useState<string>('Chest');
+  const { showSuccess, showError } = useFlashMessage();
   const [submitting, setSubmitting] = useState(false);
 
   const translateY = useSharedValue(0);
@@ -64,19 +50,13 @@ export const CreateExerciseBottomSheet: React.FC<CreateExerciseBottomSheetProps>
     }
   }, [visible, translateY]);
 
-  const resetForm = () => {
-    setName('');
-    setTargetMuscle('Chest');
+  const handleClose = () => {
     setSubmitting(false);
     translateY.value = 0;
-  };
-
-  const handleClose = () => {
-    resetForm();
     onClose();
   };
 
-  // Reanimated + PanResponder for 60fps drag-to-dismiss gesture
+  // Reanimated + PanResponder for drag-to-dismiss gesture
   const panResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
@@ -102,29 +82,18 @@ export const CreateExerciseBottomSheet: React.FC<CreateExerciseBottomSheetProps>
     transform: [{ translateY: translateY.value }],
   }));
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (data: { name: string; targetMuscle: string }) => {
     Keyboard.dismiss();
-    const trimmedName = name.trim();
-
-    if (!trimmedName) {
-      showWarning('Exercise name is required.', 'Validation');
-      return;
-    }
-
     setSubmitting(true);
 
     try {
-      const newExercise = await exercisesService.createExercise({
-        name: trimmedName,
-        targetMuscle,
-      });
+      const newExercise = await exercisesService.createExercise(data);
 
       showSuccess(`Exercise "${newExercise.name}" created!`, 'Success');
-      resetForm();
       if (onSuccess) {
         onSuccess(newExercise);
       }
-      onClose();
+      handleClose();
     } catch (err: any) {
       console.error('Error creating exercise:', err);
       showError(err?.message || 'Failed to create exercise', 'Error');
@@ -189,70 +158,17 @@ export const CreateExerciseBottomSheet: React.FC<CreateExerciseBottomSheetProps>
               </TouchableOpacity>
             </View>
 
-            {/* Form Fields */}
-            <View style={styles.formContainer}>
-              {/* Exercise Name Input */}
-              <Input
-                label="EXERCISE NAME"
-                placeholder="e.g., Incline Dumbbell Press"
-                value={name}
-                onChangeText={setName}
-                autoCapitalize="words"
-                autoFocus
-              />
-
-              {/* Target Muscle Selector */}
-              <Typography variant="label" style={styles.muscleLabel}>
-                TARGET MUSCLE GROUP
-              </Typography>
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.muscleChipsScroll}
-              >
-                {TARGET_MUSCLES.map((muscle) => {
-                  const isSelected = targetMuscle === muscle;
-                  return (
-                    <TouchableOpacity
-                      key={muscle}
-                      style={[
-                        styles.muscleChip,
-                        isSelected && styles.activeMuscleChip,
-                      ]}
-                      activeOpacity={0.8}
-                      onPress={() => setTargetMuscle(muscle)}
-                    >
-                      <Typography
-                        variant="caption"
-                        style={styles.chipText}
-                        color={isSelected ? Colors.textInverse : Colors.textSecondary}
-                      >
-                        {muscle}
-                      </Typography>
-                    </TouchableOpacity>
-                  );
-                })}
-              </ScrollView>
-
-              {/* Action Buttons */}
-              <View style={styles.actionRow}>
-                <Button
-                  title="CANCEL"
-                  variant="outline"
-                  onPress={handleClose}
-                  disabled={submitting}
-                  style={styles.cancelBtn}
-                />
-                <Button
-                  title="CREATE EXERCISE"
-                  variant="primary"
-                  loading={submitting}
-                  onPress={handleSubmit}
-                  icon={!submitting ? <Plus size={16} color="#FFFFFF" /> : undefined}
-                  style={styles.submitBtn}
-                />
-              </View>
-            </View>
+            {/* Form Fields via Shared ExerciseForm Component */}
+            <ExerciseForm
+              initialName=""
+              initialTargetMuscle="Chest"
+              submitButtonText="CREATE EXERCISE"
+              submitButtonIcon={<Plus size={16} color="#FFFFFF" />}
+              submitButtonVariant="primary"
+              submitting={submitting}
+              onCancel={handleClose}
+              onSubmit={handleSubmit}
+            />
           </Animated.View>
         </View>
       </TouchableWithoutFeedback>
@@ -327,49 +243,5 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     backgroundColor: Colors.surface,
   },
-  formContainer: {
-    gap: 14,
-  },
-  muscleLabel: {
-    fontFamily: 'Inter_700Bold',
-    fontSize: 11,
-    letterSpacing: 0.5,
-    color: Colors.textSecondary,
-    marginBottom: 6,
-    marginTop: 4,
-  },
-  muscleChipsScroll: {
-    gap: 8,
-    paddingBottom: 6,
-  },
-  muscleChip: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    backgroundColor: Colors.surface,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  activeMuscleChip: {
-    backgroundColor: Colors.darkCarbon,
-    borderColor: Colors.darkCarbon,
-  },
-  chipText: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 12,
-  },
-  actionRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    marginTop: 10,
-  },
-  cancelBtn: {
-    flex: 1,
-  },
-  submitBtn: {
-    flex: 2,
-  },
 });
+
