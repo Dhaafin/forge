@@ -25,5 +25,6 @@
   - `Checkbox`: Custom session checkbox.
   - `Badge`: Slanted tag badge (`primary`, `cyan`, `dark`).
   - `ScreenHeader`: Reusable header component for all screens.
+  - `Skeleton`: Reusable animated pulse/shimmer loading placeholder. **Use `<Skeleton>` instead of raw `<ActivityIndicator>` spinners for screen/list loading states.**
 - **Environment Driven API**: API endpoints must consume `ApiConfig` from `@/config/api.config.ts` (`EXPO_PUBLIC_API_URL`). Never hardcode backend URLs or IP addresses in source files.
 - **Native Safe Area Insets**: Use `useSafeAreaInsets()` for dynamic bottom & top device padding to avoid overlapping system navigation bars.
