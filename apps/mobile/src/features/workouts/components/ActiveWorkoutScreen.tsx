@@ -8,7 +8,7 @@ import {
   TextInput,
   Alert,
 } from 'react-native';
-import Animated, { FadeInDown } from 'react-native-reanimated';
+import Animated, { FadeInDown, FadeOutUp, LinearTransition } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   X,
@@ -19,12 +19,11 @@ import {
   Flame,
   Dumbbell,
   Layers,
-  Save,
 } from 'lucide-react-native';
 
 import { useActiveWorkout, WorkoutMode, ActiveExercise, ActiveSet } from '../hooks/useActiveWorkout';
 import { ExercisePickerBottomSheet } from './ExercisePickerBottomSheet';
-import { Typography, Badge, Button, Input } from '@/components/ui';
+import { Typography, Badge, Button } from '@/components/ui';
 import { Colors } from '@/theme/colors';
 
 export interface ActiveWorkoutScreenProps {
@@ -144,12 +143,9 @@ export const ActiveWorkoutScreen: React.FC<ActiveWorkoutScreenProps> = ({
             />
           </View>
 
-          <Button
-            title="FINISH"
-            variant="primary"
-            loading={submitting}
-            onPress={finishWorkout}
-            style={styles.finishBtn}
+          <Badge
+            label={mode === 'live' ? 'LIVE' : 'LOG'}
+            variant={mode === 'live' ? 'primary' : 'cyan'}
           />
         </View>
 
@@ -214,6 +210,7 @@ export const ActiveWorkoutScreen: React.FC<ActiveWorkoutScreenProps> = ({
             exercises.map((exItem, exIdx) => (
               <Animated.View
                 key={exItem.id}
+                layout={LinearTransition.springify()}
                 entering={FadeInDown.delay(exIdx * 40).duration(300)}
                 style={styles.exerciseCard}
               >
@@ -258,8 +255,11 @@ export const ActiveWorkoutScreen: React.FC<ActiveWorkoutScreenProps> = ({
                   const setTypeObj = SET_TYPES.find((t) => t.type === setRow.setType) || SET_TYPES[0];
 
                   return (
-                    <View
+                    <Animated.View
                       key={setRow.id}
+                      layout={LinearTransition.springify()}
+                      entering={FadeInDown.duration(200)}
+                      exiting={FadeOutUp.duration(150)}
                       style={[styles.setRow, setRow.completed && styles.completedSetRow]}
                     >
                       {/* Set Number */}
@@ -321,7 +321,7 @@ export const ActiveWorkoutScreen: React.FC<ActiveWorkoutScreenProps> = ({
                       >
                         <X size={16} color={Colors.textSecondary} />
                       </TouchableOpacity>
-                    </View>
+                    </Animated.View>
                   );
                 })}
 
@@ -344,10 +344,20 @@ export const ActiveWorkoutScreen: React.FC<ActiveWorkoutScreenProps> = ({
         {/* Bottom Action Footer Bar */}
         <View style={[styles.bottomBar, { paddingBottom: bottomPadding }]}>
           <Button
-            title="+ ADD EXERCISE"
+            title="+ EXERCISE"
             variant="outline"
-            icon={<Plus size={18} color={Colors.racingRed} />}
+            icon={<Plus size={16} color={Colors.racingRed} />}
             onPress={() => setPickerVisible(true)}
+            style={{ flex: 1 }}
+          />
+
+          <Button
+            title="FINISH WORKOUT"
+            variant="primary"
+            loading={submitting}
+            icon={!submitting ? <Check size={16} color="#FFFFFF" /> : undefined}
+            onPress={finishWorkout}
+            style={{ flex: 1.5 }}
           />
         </View>
 
@@ -391,10 +401,6 @@ const styles = StyleSheet.create({
     fontFamily: 'Poppins_600SemiBold',
     color: Colors.darkCarbon,
     paddingVertical: 4,
-  },
-  finishBtn: {
-    paddingHorizontal: 16,
-    height: 38,
   },
   hudContainer: {
     flexDirection: 'row',
@@ -513,19 +519,25 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     borderWidth: 1,
     borderColor: Colors.border,
-    height: 34,
+    height: 40,
     justifyContent: 'center',
+    alignItems: 'center',
   },
   numInput: {
+    width: '100%',
+    height: 40,
     fontFamily: 'Inter_600SemiBold',
-    fontSize: 13,
+    fontSize: 14,
     color: Colors.darkCarbon,
     textAlign: 'center',
     paddingHorizontal: 4,
+    paddingVertical: 0,
+    includeFontPadding: false,
+    textAlignVertical: 'center',
   },
   checkBtn: {
-    width: 30,
-    height: 30,
+    width: 32,
+    height: 32,
     borderRadius: 8,
     backgroundColor: Colors.surface,
     borderWidth: 1,
@@ -557,10 +569,14 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: Colors.surfaceElevated,
     borderTopWidth: 1,
     borderTopColor: Colors.border,
     paddingHorizontal: 16,
     paddingTop: 12,
+    gap: 10,
   },
 });
+

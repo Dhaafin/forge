@@ -459,13 +459,14 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   chipsContainer: {
-    paddingBottom: 10,
+    paddingBottom: 12,
     gap: 8,
+    alignItems: 'center',
   },
   filterChip: {
     paddingHorizontal: 14,
-    paddingVertical: 6,
-    borderRadius: 18,
+    height: 32,
+    borderRadius: 16,
     backgroundColor: Colors.surface,
     borderWidth: 1,
     borderColor: Colors.border,
