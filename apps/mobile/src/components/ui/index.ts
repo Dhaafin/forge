@@ -5,3 +5,4 @@ export * from './Checkbox';
 export * from './Badge';
 export * from './ScreenHeader';
 export * from './Skeleton';
+export * from './FlashMessage';
