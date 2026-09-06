@@ -4,7 +4,6 @@ import {
   StyleSheet,
   FlatList,
   TouchableOpacity,
-  ActivityIndicator,
   ScrollView,
 } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
@@ -13,7 +12,7 @@ import { Dumbbell, Search, RefreshCw, AlertCircle, ChevronRight } from 'lucide-r
 
 import { useExercises } from '../hooks/useExercises';
 import { ExerciseItem } from '../services/exercises.service';
-import { Typography, Input, Badge, ScreenHeader } from '@/components/ui';
+import { Typography, Input, Badge, ScreenHeader, Skeleton } from '@/components/ui';
 import { Colors } from '@/theme/colors';
 
 const MUSCLE_GROUPS = [
@@ -133,10 +132,18 @@ export const ExercisesOrganism: React.FC = () => {
         </ScrollView>
       </View>
 
-      {/* Main Exercises List */}
+      {/* Main Exercises List with Skeleton Placeholders */}
       {loading ? (
-        <View style={styles.centerContainer}>
-          <ActivityIndicator size="large" color={Colors.racingRed} />
+        <View style={styles.skeletonList}>
+          {[1, 2, 3, 4, 5].map((key) => (
+            <View key={key} style={styles.skeletonCard}>
+              <Skeleton width={34} height={34} borderRadius={17} style={{ marginRight: 12 }} />
+              <View style={{ flex: 1, marginRight: 12 }}>
+                <Skeleton width="75%" height={16} borderRadius={6} />
+              </View>
+              <Skeleton width={60} height={20} borderRadius={4} />
+            </View>
+          ))}
         </View>
       ) : error ? (
         <View style={styles.centerContainer}>
@@ -218,6 +225,20 @@ const styles = StyleSheet.create({
     paddingBottom: 110,
     paddingTop: 4,
     gap: 10,
+  },
+  skeletonList: {
+    paddingHorizontal: 20,
+    paddingTop: 4,
+    gap: 10,
+  },
+  skeletonCard: {
+    backgroundColor: Colors.surfaceElevated,
+    borderRadius: 14,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   card: {
     backgroundColor: Colors.surfaceElevated,
