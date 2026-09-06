@@ -29,3 +29,8 @@
   - `FlashMessage`: Modern top toast notification supporting `success`, `error`, `warning`, and `info`. **Use `useFlashMessage()` from `@/ctx/flash-message-context` (e.g. `showSuccess`, `showError`, `showWarning`, `showInfo`) instead of raw `Alert.alert()` for in-app user notifications.**
 - **Environment Driven API**: API endpoints must consume `ApiConfig` from `@/config/api.config.ts` (`EXPO_PUBLIC_API_URL`). Never hardcode backend URLs or IP addresses in source files.
 - **Native Safe Area Insets**: Use `useSafeAreaInsets()` for dynamic bottom & top device padding to avoid overlapping system navigation bars.
+
+## 4. Backend API Architecture (`apps/web/app/api`)
+- **Primary Backend API**: The active backend service for Forge is Next.js API in `apps/web/app/api/`.
+- **Ignore FastAPI (`forge-api`)**: Do NOT write, target, or design logic for FastAPI (`forge-api`). `forge-api` is strictly an old reference repository and is not active.
+- **CamelCase Schema Standard**: All API request bodies and Zod validation schemas (`apps/web/lib/validations.ts`) use clean camelCase conventions (e.g., `exerciseId`, `setNumber`, `weightKg`, `sequenceOrder`, `durationMinutes`, `startTime`, `endTime`). Mobile app payloads must always send clean camelCase objects.

@@ -2,18 +2,12 @@ import { apiFetch } from '@/lib/api';
 import { ApiConfig } from '@/config/api.config';
 
 export interface WorkoutSetPayload {
-  exerciseId?: string;
-  setNumber?: number;
-  weightKg?: number;
-  reps?: number;
+  exerciseId: string;
+  setNumber: number;
+  weightKg: number;
+  reps: number;
   setType?: 'normal' | 'warmup' | 'drop' | 'failure' | string;
   sequenceOrder?: number;
-
-  exercise_id?: string;
-  set_number?: number;
-  weight_kg?: number;
-  set_type?: 'normal' | 'warmup' | 'drop' | 'failure' | string;
-  sequence_order?: number;
 }
 
 export interface CreateWorkoutSessionPayload {
@@ -21,10 +15,6 @@ export interface CreateWorkoutSessionPayload {
   durationMinutes?: number;
   startTime?: string;
   endTime?: string;
-
-  duration_minutes?: number;
-  start_time?: string;
-  end_time?: string;
   sets: WorkoutSetPayload[];
 }
 
