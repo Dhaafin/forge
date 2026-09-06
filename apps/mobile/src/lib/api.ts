@@ -22,10 +22,11 @@ const processQueue = (error: any = null) => {
   failedQueue = [];
 };
 
-/** High performance fetch wrapper with auto Authorization & 401 Token Refresh */
+/** High performance fetch wrapper with 10s timeout, auto Authorization & 401 Token Refresh */
 export async function apiFetch<T = any>(
   endpoint: string,
-  options: RequestInit = {}
+  options: RequestInit = {},
+  timeoutMs = 10000
 ): Promise<T> {
   const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${endpoint}`;
   const accessToken = await getAccessToken();
@@ -39,77 +40,99 @@ export async function apiFetch<T = any>(
     headers['Authorization'] = `Bearer ${accessToken}`;
   }
 
-  const response = await fetch(url, {
-    ...options,
-    headers,
-  });
+  // Create AbortController for network timeout protection
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
-  // Handle 401 Unauthorized (Access Token Expired)
-  if (response.status === 401 && !endpoint.includes('/api/auth/login') && !endpoint.includes('/api/auth/refresh')) {
-    if (isRefreshing) {
-      return new Promise<T>((resolve, reject) => {
-        failedQueue.push({
-          resolve: async () => {
-            try {
-              const retryRes = await apiFetch<T>(endpoint, options);
-              resolve(retryRes);
-            } catch (err) {
-              reject(err);
-            }
-          },
-          reject: (err) => reject(err),
+  try {
+    const response = await fetch(url, {
+      ...options,
+      headers,
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
+
+    // Handle 401 Unauthorized (Access Token Expired)
+    if (response.status === 401 && !endpoint.includes('/api/auth/login') && !endpoint.includes('/api/auth/refresh')) {
+      if (isRefreshing) {
+        return new Promise<T>((resolve, reject) => {
+          failedQueue.push({
+            resolve: async () => {
+              try {
+                const retryRes = await apiFetch<T>(endpoint, options, timeoutMs);
+                resolve(retryRes);
+              } catch (err) {
+                reject(err);
+              }
+            },
+            reject: (err) => reject(err),
+          });
         });
-      });
-    }
-
-    isRefreshing = true;
-
-    try {
-      const refreshToken = await getRefreshToken();
-      if (!refreshToken) {
-        throw new Error('No refresh token available');
       }
 
-      // Call refresh API
-      const refreshRes = await fetch(`${API_BASE_URL}/api/auth/refresh`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ refreshToken }),
-      });
+      isRefreshing = true;
 
-      if (!refreshRes.ok) {
-        throw new Error('Failed to refresh token');
-      }
-
-      const refreshData = await refreshRes.json();
-      if (refreshData.token) {
-        await setAccessToken(refreshData.token);
-        if (refreshData.refreshToken) {
-          await setRefreshToken(refreshData.refreshToken);
+      try {
+        const refreshToken = await getRefreshToken();
+        if (!refreshToken) {
+          throw new Error('No refresh token available');
         }
 
-        processQueue(null);
+        // Call refresh API with 10s timeout
+        const refreshController = new AbortController();
+        const refreshTimeoutId = setTimeout(() => refreshController.abort(), timeoutMs);
+
+        const refreshRes = await fetch(`${API_BASE_URL}/api/auth/refresh`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ refreshToken }),
+          signal: refreshController.signal,
+        });
+        clearTimeout(refreshTimeoutId);
+
+        if (!refreshRes.ok) {
+          throw new Error('Failed to refresh token');
+        }
+
+        const refreshData = await refreshRes.json();
+        if (refreshData.token) {
+          await setAccessToken(refreshData.token);
+          if (refreshData.refreshToken) {
+            await setRefreshToken(refreshData.refreshToken);
+          }
+
+          processQueue(null);
+          isRefreshing = false;
+
+          // Retry original request
+          return apiFetch<T>(endpoint, options, timeoutMs);
+        } else {
+          throw new Error('Invalid token response');
+        }
+      } catch (refreshErr) {
+        processQueue(refreshErr);
         isRefreshing = false;
-
-        // Retry original request
-        return apiFetch<T>(endpoint, options);
-      } else {
-        throw new Error('Invalid token response');
+        await clearAuthTokens();
+        throw refreshErr;
       }
-    } catch (refreshErr) {
-      processQueue(refreshErr);
-      isRefreshing = false;
-      await clearAuthTokens();
-      throw refreshErr;
     }
+
+    const data = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      const errorMessage = data?.error || data?.message || `Request failed with status ${response.status}`;
+      throw new Error(errorMessage);
+    }
+
+    return data as T;
+  } catch (err: any) {
+    clearTimeout(timeoutId);
+    if (err.name === 'AbortError') {
+      throw new Error(`Connection timed out (${timeoutMs / 1000}s). Make sure backend web server is running at ${API_BASE_URL}`);
+    }
+    if (err.message === 'Network request failed') {
+      throw new Error(`Cannot connect to backend server at ${API_BASE_URL}. Ensure Next.js dev server is running.`);
+    }
+    throw err;
   }
-
-  const data = await response.json().catch(() => ({}));
-
-  if (!response.ok) {
-    const errorMessage = data?.error || data?.message || `Request failed with status ${response.status}`;
-    throw new Error(errorMessage);
-  }
-
-  return data as T;
 }
