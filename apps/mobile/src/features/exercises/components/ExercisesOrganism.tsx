@@ -8,11 +8,21 @@ import {
 } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Dumbbell, Search, RefreshCw, AlertCircle, ChevronRight, Plus } from 'lucide-react-native';
+import {
+  Dumbbell,
+  Search,
+  RefreshCw,
+  AlertCircle,
+  Plus,
+  Edit3,
+  Trash2,
+} from 'lucide-react-native';
 
 import { useExercises } from '../hooks/useExercises';
 import { ExerciseItem } from '../services/exercises.service';
 import { CreateExerciseBottomSheet } from './CreateExerciseBottomSheet';
+import { EditExerciseBottomSheet } from './EditExerciseBottomSheet';
+import { DeleteExerciseConfirmationModal } from './DeleteExerciseConfirmationModal';
 import { Typography, Input, Badge, ScreenHeader, Skeleton } from '@/components/ui';
 import { Colors } from '@/theme/colors';
 
@@ -31,6 +41,8 @@ const MUSCLE_GROUPS = [
 export const ExercisesOrganism: React.FC = () => {
   const insets = useSafeAreaInsets();
   const [createSheetVisible, setCreateSheetVisible] = useState(false);
+  const [editingExercise, setEditingExercise] = useState<ExerciseItem | null>(null);
+  const [deletingExercise, setDeletingExercise] = useState<ExerciseItem | null>(null);
 
   const {
     exercises,
@@ -76,9 +88,27 @@ export const ExercisesOrganism: React.FC = () => {
         <Badge
           label={item.targetMuscle}
           variant={item.targetMuscle === selectedMuscle ? 'primary' : 'dark'}
+          style={styles.badge}
         />
 
-        <ChevronRight size={16} color={Colors.textMuted} style={styles.chevron} />
+        {/* Action Buttons: Edit & Delete */}
+        <View style={styles.cardActions}>
+          <TouchableOpacity
+            style={styles.actionBtn}
+            activeOpacity={0.7}
+            onPress={() => setEditingExercise(item)}
+          >
+            <Edit3 size={15} color={Colors.textSecondary} />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.actionBtn}
+            activeOpacity={0.7}
+            onPress={() => setDeletingExercise(item)}
+          >
+            <Trash2 size={15} color={Colors.racingRed} />
+          </TouchableOpacity>
+        </View>
       </View>
     </Animated.View>
   );
@@ -179,7 +209,7 @@ export const ExercisesOrganism: React.FC = () => {
         />
       )}
 
-      {/* Bottom-Right Floating Action Button (FAB) anchored 16px above ActionBar */}
+      {/* Bottom-Right Floating Action Button (FAB) */}
       <TouchableOpacity
         style={styles.fab}
         activeOpacity={0.85}
@@ -188,10 +218,24 @@ export const ExercisesOrganism: React.FC = () => {
         <Plus size={24} color="#FFFFFF" />
       </TouchableOpacity>
 
-      {/* Create Exercise Bottom Sheet */}
+      {/* Modals & Bottom Sheets */}
       <CreateExerciseBottomSheet
         visible={createSheetVisible}
         onClose={() => setCreateSheetVisible(false)}
+        onSuccess={() => refetch()}
+      />
+
+      <EditExerciseBottomSheet
+        exercise={editingExercise}
+        visible={Boolean(editingExercise)}
+        onClose={() => setEditingExercise(null)}
+        onSuccess={() => refetch()}
+      />
+
+      <DeleteExerciseConfirmationModal
+        exercise={deletingExercise}
+        visible={Boolean(deletingExercise)}
+        onClose={() => setDeletingExercise(null)}
         onSuccess={() => refetch()}
       />
     </View>
@@ -308,8 +352,20 @@ const styles = StyleSheet.create({
     color: Colors.darkCarbon,
     includeFontPadding: false,
   },
-  chevron: {
-    marginLeft: 6,
+  badge: {
+    marginRight: 8,
+  },
+  cardActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  actionBtn: {
+    padding: 6,
+    borderRadius: 8,
+    backgroundColor: Colors.surface,
+    borderWidth: 1,
+    borderColor: Colors.border,
   },
   centerContainer: {
     flex: 1,

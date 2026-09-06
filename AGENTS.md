@@ -15,7 +15,7 @@
 - **Feature-Based Domain Organization**: Place domain features inside `apps/mobile/src/features/<feature-name>/`:
   - `services/`: Pure TypeScript API client calls (e.g., `exercises.service.ts`, `auth.service.ts`).
   - `hooks/`: Business logic, form state, and data fetching hooks (e.g., `useExercises.ts`, `useLoginForm.ts`).
-  - `components/`: Atomic Design components & domain modals (e.g., `<ExercisesOrganism />`, `<CreateExerciseBottomSheet />`).
+  - `components/`: Atomic Design components & domain modals (e.g., `<ExercisesOrganism />`, `<CreateExerciseBottomSheet />`, `<EditExerciseBottomSheet />`, `<DeleteExerciseConfirmationModal />`).
   - `index.ts`: Feature public exports.
 - **Thin Route Layer (`src/app/`)**: Keep Expo Router screens lightweight by rendering the main Organism from the feature domain (e.g., `<ExercisesOrganism />`).
 - **Reuse UI Primitives**: ALWAYS reuse shared UI components from `@/components/ui`:

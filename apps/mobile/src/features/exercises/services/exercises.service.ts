@@ -46,4 +46,22 @@ export const exercisesService = {
       body: JSON.stringify(data),
     });
   },
+
+  /** Update an existing exercise */
+  async updateExercise(
+    id: string,
+    data: { name: string; targetMuscle: string }
+  ): Promise<ExerciseItem> {
+    return apiFetch<ExerciseItem>(`${ApiConfig.endpoints.exercises}/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+
+  /** Delete an exercise */
+  async deleteExercise(id: string): Promise<void> {
+    return apiFetch<void>(`${ApiConfig.endpoints.exercises}/${id}`, {
+      method: 'DELETE',
+    });
+  },
 };
