@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { X } from 'lucide-react-native';
 import { Typography } from './Typography';
-import { Colors } from '@/config/theme';
+import { Colors } from '@/theme/colors';
 
 export interface BottomSheetModalProps {
   visible: boolean;
@@ -55,7 +55,7 @@ export function BottomSheetModal({
                 style={styles.closeBtn}
                 hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
               >
-                <X size={20} color={Colors.textMuted} />
+                <X size={20} color={Colors.textSecondary} />
               </TouchableOpacity>
             </View>
           )}
@@ -73,11 +73,11 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   backdrop: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: 'rgba(0, 0, 0, 0.75)',
   },
   sheetContainer: {
-    backgroundColor: Colors.cardBg,
+    backgroundColor: Colors.surfaceElevated,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     borderWidth: 1,
@@ -101,7 +101,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   titleText: {
-    color: Colors.text,
+    color: Colors.darkCarbon,
   },
   closeBtn: {
     padding: 4,
