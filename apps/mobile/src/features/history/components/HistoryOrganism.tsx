@@ -17,6 +17,7 @@ import {
   Clock,
   Dumbbell,
   Plus,
+  Edit2,
 } from 'lucide-react-native';
 
 import { useWorkoutHistory } from '../hooks/useWorkoutHistory';
@@ -81,59 +82,72 @@ export const HistoryOrganism: React.FC = () => {
     router.push({ pathname: '/workout', params: { mode } });
   };
 
+  const handleEditSession = (sessionId: string) => {
+    router.push({ pathname: '/workout', params: { sessionId } });
+  };
+
   const renderSessionItem = ({ item, index }: { item: WorkoutSessionItem; index: number }) => (
     <Animated.View
       entering={FadeInDown.delay(Math.min(index * 35, 350)).duration(350)}
       style={styles.card}
     >
-      {/* Left Edge Accent Stripe */}
-      <View style={styles.cardStripe}>
-        <View style={[styles.stripePart, { backgroundColor: Colors.racingRed }]} />
-        <View style={[styles.stripePart, { backgroundColor: Colors.motorsportBlue }]} />
-      </View>
-
-      <View style={styles.cardInner}>
-        <View style={styles.cardIconCircle}>
-          <Calendar size={16} color={Colors.racingRed} />
+      <TouchableOpacity
+        activeOpacity={0.8}
+        onPress={() => handleEditSession(item.id)}
+        style={styles.cardTouchable}
+      >
+        {/* Left Edge Accent Stripe */}
+        <View style={styles.cardStripe}>
+          <View style={[styles.stripePart, { backgroundColor: Colors.racingRed }]} />
+          <View style={[styles.stripePart, { backgroundColor: Colors.motorsportBlue }]} />
         </View>
 
-        <View style={styles.cardMain}>
-          <Typography variant="h3" style={styles.sessionTitle} numberOfLines={1}>
-            {item.title}
-          </Typography>
+        <View style={styles.cardInner}>
+          <View style={styles.cardIconCircle}>
+            <Calendar size={16} color={Colors.racingRed} />
+          </View>
 
-          <View style={styles.subMetaRow}>
-            <Clock size={12} color={Colors.textSecondary} style={{ marginRight: 4 }} />
-            <Typography variant="caption" color={Colors.textSecondary}>
-              {formatDate(item.startTime)}
+          <View style={styles.cardMain}>
+            <Typography variant="h3" style={styles.sessionTitle} numberOfLines={1}>
+              {item.title}
             </Typography>
-            {item.durationMinutes ? (
-              <Typography variant="caption" color={Colors.textSecondary} style={{ marginLeft: 6 }}>
-                • {item.durationMinutes} min
+
+            <View style={styles.subMetaRow}>
+              <Clock size={12} color={Colors.textSecondary} style={{ marginRight: 4 }} />
+              <Typography variant="caption" color={Colors.textSecondary}>
+                {formatDate(item.startTime)}
               </Typography>
-            ) : null}
+              {item.durationMinutes ? (
+                <Typography variant="caption" color={Colors.textSecondary} style={{ marginLeft: 6 }}>
+                  • {item.durationMinutes} min
+                </Typography>
+              ) : null}
+            </View>
+          </View>
+
+          <View style={styles.badgeColumn}>
+            <View style={styles.badgeRowWithEdit}>
+              {item.setsCount ? (
+                <Badge
+                  label={`${item.setsCount} sets`}
+                  variant="dark"
+                  style={styles.badge}
+                />
+              ) : null}
+              <Edit2 size={13} color={Colors.textSecondary} style={{ marginLeft: 4 }} />
+            </View>
+            {item.totalVolumeKg ? (
+              <Badge
+                label={`${Math.round(item.totalVolumeKg)} kg`}
+                variant="primary"
+                style={styles.badge}
+              />
+            ) : (
+              <Badge label="Logged" variant="cyan" style={styles.badge} />
+            )}
           </View>
         </View>
-
-        <View style={styles.badgeColumn}>
-          {item.setsCount ? (
-            <Badge
-              label={`${item.setsCount} sets`}
-              variant="dark"
-              style={styles.badge}
-            />
-          ) : null}
-          {item.totalVolumeKg ? (
-            <Badge
-              label={`${Math.round(item.totalVolumeKg)} kg`}
-              variant="primary"
-              style={styles.badge}
-            />
-          ) : (
-            <Badge label="Logged" variant="cyan" style={styles.badge} />
-          )}
-        </View>
-      </View>
+      </TouchableOpacity>
     </Animated.View>
   );
 
@@ -365,6 +379,13 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   subMetaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  cardTouchable: {
+    width: '100%',
+  },
+  badgeRowWithEdit: {
     flexDirection: 'row',
     alignItems: 'center',
   },

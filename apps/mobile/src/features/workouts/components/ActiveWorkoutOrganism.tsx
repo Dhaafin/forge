@@ -18,12 +18,14 @@ import {
 
 export interface ActiveWorkoutOrganismProps {
   mode?: WorkoutMode;
+  sessionId?: string;
   onClose?: () => void;
   onSuccess?: () => void;
 }
 
 export const ActiveWorkoutOrganism: React.FC<ActiveWorkoutOrganismProps> = ({
   mode = 'live',
+  sessionId,
   onClose,
   onSuccess,
 }) => {
@@ -46,6 +48,7 @@ export const ActiveWorkoutOrganism: React.FC<ActiveWorkoutOrganismProps> = ({
     exercises,
     submitting,
     startSession,
+    loadSessionForEdit,
     resetSession,
     addExercise,
     removeExercise,
@@ -61,10 +64,14 @@ export const ActiveWorkoutOrganism: React.FC<ActiveWorkoutOrganismProps> = ({
     handleExit();
   });
 
-  // Start session on mount
+  // Start or load session on mount
   useEffect(() => {
-    startSession(mode);
-  }, [mode, startSession]);
+    if (sessionId) {
+      loadSessionForEdit(sessionId);
+    } else {
+      startSession(mode);
+    }
+  }, [mode, sessionId, startSession, loadSessionForEdit]);
 
   const handleDiscard = () => {
     if (exercises.length > 0) {

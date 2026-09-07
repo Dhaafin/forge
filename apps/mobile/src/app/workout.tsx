@@ -3,8 +3,9 @@ import { useLocalSearchParams } from 'expo-router';
 import { ActiveWorkoutOrganism, WorkoutMode } from '@/features/workouts';
 
 export default function WorkoutPage() {
-  const params = useLocalSearchParams<{ mode?: WorkoutMode }>();
+  const params = useLocalSearchParams<{ mode?: WorkoutMode; sessionId?: string }>();
   const mode = (params.mode as WorkoutMode) || 'live';
 
-  return <ActiveWorkoutOrganism mode={mode} />;
+  return <ActiveWorkoutOrganism mode={mode} sessionId={params.sessionId} />;
 }
+
