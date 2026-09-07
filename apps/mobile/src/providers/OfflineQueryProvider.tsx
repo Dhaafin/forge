@@ -1,7 +1,6 @@
 import React from 'react';
 import { QueryClient, onlineManager } from '@tanstack/react-query';
-import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
-import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persister';
+import { PersistQueryClientProvider, Persister } from '@tanstack/react-query-persist-client';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import NetInfo from '@react-native-community/netinfo';
 
@@ -25,11 +24,30 @@ export const queryClient = new QueryClient({
   },
 });
 
-const asyncStoragePersister = createAsyncStoragePersister({
-  storage: AsyncStorage,
-  key: 'FORGE_QUERY_OFFLINE_CACHE',
-  throttleTime: 1000,
-});
+const asyncStoragePersister: Persister = {
+  persistClient: async (client) => {
+    try {
+      await AsyncStorage.setItem('FORGE_QUERY_OFFLINE_CACHE', JSON.stringify(client));
+    } catch {
+      // Ignore write errors
+    }
+  },
+  restoreClient: async () => {
+    try {
+      const cache = await AsyncStorage.getItem('FORGE_QUERY_OFFLINE_CACHE');
+      return cache ? JSON.parse(cache) : undefined;
+    } catch {
+      return undefined;
+    }
+  },
+  removeClient: async () => {
+    try {
+      await AsyncStorage.removeItem('FORGE_QUERY_OFFLINE_CACHE');
+    } catch {
+      // Ignore remove errors
+    }
+  },
+};
 
 interface OfflineQueryProviderProps {
   children: React.ReactNode;
