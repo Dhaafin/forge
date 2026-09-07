@@ -16,6 +16,7 @@ import {
 } from '@expo-google-fonts/poppins';
 import { AuthProvider } from '@/ctx/auth-context';
 import { FlashMessageProvider } from '@/ctx/flash-message-context';
+import { OfflineQueryProvider } from '@/providers/OfflineQueryProvider';
 import { ActionBar } from '@/components/navigation/ActionBar';
 
 SplashScreen.preventAutoHideAsync();
@@ -42,24 +43,26 @@ export default function RootLayout() {
   }
 
   return (
-    <AuthProvider>
-      <FlashMessageProvider>
-        <View style={styles.container}>
-          <Stack
-            screenOptions={{
-              headerShown: false,
-              animation: 'fade',
-            }}
-          >
-            <Stack.Screen name="(auth)/login" options={{ headerShown: false }} />
-            <Stack.Screen name="index" options={{ headerShown: false }} />
-            <Stack.Screen name="exercises" options={{ headerShown: false }} />
-            <Stack.Screen name="session" options={{ headerShown: false }} />
-          </Stack>
-          <ActionBar />
-        </View>
-      </FlashMessageProvider>
-    </AuthProvider>
+    <OfflineQueryProvider>
+      <AuthProvider>
+        <FlashMessageProvider>
+          <View style={styles.container}>
+            <Stack
+              screenOptions={{
+                headerShown: false,
+                animation: 'fade',
+              }}
+            >
+              <Stack.Screen name="(auth)/login" options={{ headerShown: false }} />
+              <Stack.Screen name="index" options={{ headerShown: false }} />
+              <Stack.Screen name="exercises" options={{ headerShown: false }} />
+              <Stack.Screen name="session" options={{ headerShown: false }} />
+            </Stack>
+            <ActionBar />
+          </View>
+        </FlashMessageProvider>
+      </AuthProvider>
+    </OfflineQueryProvider>
   );
 }
 
