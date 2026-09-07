@@ -1,10 +1,11 @@
 import React from 'react';
-import { View, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { Shield, Lock, User, AlertCircle } from 'lucide-react-native';
 import { Typography, Button, Input, Checkbox } from '@/components/ui';
 import { Colors } from '@/theme/colors';
 import { useLoginForm } from '../hooks/useLoginForm';
+import { useFlashMessage } from '@/ctx/flash-message-context';
 
 export interface LoginFormSectionProps {
   onSuccess?: () => void;
@@ -12,6 +13,7 @@ export interface LoginFormSectionProps {
 
 export const LoginFormSection: React.FC<LoginFormSectionProps> = ({ onSuccess }) => {
   const form = useLoginForm();
+  const { showInfo } = useFlashMessage();
 
   const handleSubmit = () => {
     form.handleLogin(onSuccess);
@@ -64,9 +66,9 @@ export const LoginFormSection: React.FC<LoginFormSectionProps> = ({ onSuccess })
         <TouchableOpacity
           activeOpacity={0.7}
           onPress={() =>
-            Alert.alert(
-              'Password Recovery',
-              'Please contact your administrator to reset your telemetry password.'
+            showInfo(
+              'Please contact your administrator to reset your telemetry password.',
+              'Password Recovery'
             )
           }
         >
