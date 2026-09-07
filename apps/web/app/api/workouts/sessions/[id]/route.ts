@@ -1,11 +1,31 @@
 import { NextResponse } from 'next/server';
 import { db, workoutSessions } from '@repo/db';
 import { eq, and } from 'drizzle-orm';
-import { updateSession, deleteSession } from '@/lib/workouts/session';
+import { getSessionById, updateSession, deleteSession } from '@/lib/workouts/session';
 import { UpdateSessionSchema } from '@/lib/validations';
 import { getUserIdFromRequest } from '@/lib/auth';
 
 type Params = { params: Promise<{ id: string }> };
+
+// GET /api/workouts/sessions/[id]
+export async function GET(request: Request, { params }: Params) {
+  try {
+    const userId = await getUserIdFromRequest(request);
+    if (!userId) return NextResponse.json({ error: 'Unauthorized: Bearer token or x-user-id header is required' }, { status: 401 });
+
+    const { id } = await params;
+    const session = await getSessionById(id);
+
+    if (!session || session.userId !== userId) {
+      return NextResponse.json({ error: 'Session not found' }, { status: 404 });
+    }
+
+    return NextResponse.json(session);
+  } catch (error) {
+    console.error('[GET /api/workouts/sessions/[id]]', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
+}
 
 // PUT /api/workouts/sessions/[id]
 export async function PUT(request: Request, { params }: Params) {
@@ -76,3 +96,5 @@ export async function DELETE(request: Request, { params }: Params) {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
+
+export const PATCH = PUT;
