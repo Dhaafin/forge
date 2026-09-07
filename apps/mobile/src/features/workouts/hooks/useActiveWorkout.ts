@@ -56,6 +56,8 @@ export function useActiveWorkout(onSuccess?: () => void) {
     };
   }, [showSuccess]);
 
+  const [editingSessionId, setEditingSessionId] = useState<string | null>(null);
+
   // Live Timer Effect
   useEffect(() => {
     if (active && mode === 'live') {
@@ -77,6 +79,7 @@ export function useActiveWorkout(onSuccess?: () => void) {
     setStartTime(new Date());
     setElapsedSeconds(0);
     setExercises([]);
+    setEditingSessionId(null);
     setActive(true);
   }, []);
 
@@ -84,98 +87,54 @@ export function useActiveWorkout(onSuccess?: () => void) {
     setActive(false);
     setElapsedSeconds(0);
     setExercises([]);
+    setEditingSessionId(null);
     if (timerRef.current) clearInterval(timerRef.current);
   }, []);
 
-  const addExercise = useCallback((ex: { id: string; name: string; targetMuscle: string }) => {
-    const instanceId = `${ex.id}-${Date.now()}`;
-    const initialSet: ActiveSet = {
-      id: `${instanceId}-set-1`,
-      setNumber: 1,
-      weightKg: 0,
-      reps: 10,
-      setType: 'normal',
-      completed: false,
-    };
+  const loadSessionForEdit = useCallback(async (sessionId: string) => {
+    setSubmitting(true);
+    try {
+      const session = await workoutsService.getSessionById(sessionId);
+      if (!session) throw new Error('Session not found');
 
-    setExercises((prev) => [
-      ...prev,
-      {
-        id: instanceId,
-        exerciseId: ex.id,
-        name: ex.name,
-        targetMuscle: ex.targetMuscle,
-        sets: [initialSet],
-      },
-    ]);
-  }, []);
+      setEditingSessionId(session.id);
+      setTitle(session.title || 'Logged Workout');
+      setMode('past');
+      setStartTime(new Date(session.startTime || Date.now()));
+      setElapsedSeconds((session.durationMinutes || 0) * 60);
 
-  const removeExercise = useCallback((instanceId: string) => {
-    setExercises((prev) => prev.filter((e) => e.id !== instanceId));
-  }, []);
+      // Group returned sets by exercise
+      const exMap = new Map<string, ActiveExercise>();
+      (session.sets || []).forEach((s: any) => {
+        if (!exMap.has(s.exerciseId)) {
+          exMap.set(s.exerciseId, {
+            id: `${s.exerciseId}-${Date.now()}`,
+            exerciseId: s.exerciseId,
+            name: s.exerciseName || 'Exercise',
+            targetMuscle: 'General',
+            sets: [],
+          });
+        }
+        const ex = exMap.get(s.exerciseId)!;
+        ex.sets.push({
+          id: s.id || `${s.exerciseId}-set-${s.setNumber}`,
+          setNumber: s.setNumber,
+          weightKg: Number(s.weightKg) || 0,
+          reps: Number(s.reps) || 0,
+          setType: s.setType || 'normal',
+          completed: true,
+        });
+      });
 
-  // Add Set with auto-copy from previous set
-  const addSet = useCallback((instanceId: string) => {
-    setExercises((prev) =>
-      prev.map((ex) => {
-        if (ex.id !== instanceId) return ex;
-
-        const lastSet = ex.sets[ex.sets.length - 1];
-        const nextSetNumber = ex.sets.length + 1;
-        const newSet: ActiveSet = {
-          id: `${instanceId}-set-${nextSetNumber}-${Date.now()}`,
-          setNumber: nextSetNumber,
-          weightKg: lastSet ? lastSet.weightKg : 0,
-          reps: lastSet ? lastSet.reps : 10,
-          setType: 'normal',
-          completed: false,
-        };
-
-        return { ...ex, sets: [...ex.sets, newSet] };
-      })
-    );
-  }, []);
-
-  const updateSet = useCallback(
-    (instanceId: string, setId: string, updates: Partial<ActiveSet>) => {
-      setExercises((prev) =>
-        prev.map((ex) => {
-          if (ex.id !== instanceId) return ex;
-
-          const updatedSets = ex.sets.map((s) => (s.id === setId ? { ...s, ...updates } : s));
-          return { ...ex, sets: updatedSets };
-        })
-      );
-    },
-    []
-  );
-
-  const removeSet = useCallback((instanceId: string, setId: string) => {
-    setExercises((prev) =>
-      prev.map((ex) => {
-        if (ex.id !== instanceId) return ex;
-
-        const filteredSets = ex.sets
-          .filter((s) => s.id !== setId)
-          .map((s, index) => ({ ...s, setNumber: index + 1 }));
-
-        return { ...ex, sets: filteredSets };
-      })
-    );
-  }, []);
-
-  const toggleSetComplete = useCallback((instanceId: string, setId: string) => {
-    setExercises((prev) =>
-      prev.map((ex) => {
-        if (ex.id !== instanceId) return ex;
-
-        const updatedSets = ex.sets.map((s) =>
-          s.id === setId ? { ...s, completed: !s.completed } : s
-        );
-        return { ...ex, sets: updatedSets };
-      })
-    );
-  }, []);
+      setExercises(Array.from(exMap.values()));
+      setActive(true);
+    } catch (err: any) {
+      console.error('Error loading session for edit:', err);
+      showError(err?.message || 'Failed to load session for editing', 'Error');
+    } finally {
+      setSubmitting(false);
+    }
+  }, [showError]);
 
   const finishWorkout = useCallback(async () => {
     if (exercises.length === 0) {
@@ -218,25 +177,34 @@ export function useActiveWorkout(onSuccess?: () => void) {
     };
 
     try {
-      await workoutsService.createSession(sessionPayload);
+      if (editingSessionId) {
+        await workoutsService.updateSession(editingSessionId, sessionPayload);
+        showSuccess(`Workout "${title}" updated successfully!`, 'Session Updated');
+      } else {
+        await workoutsService.createSession(sessionPayload);
+        showSuccess(`Workout "${title}" saved successfully!`, 'Session Completed');
+      }
       queryClient.invalidateQueries();
-      showSuccess(`Workout "${title}" saved successfully!`, 'Session Completed');
       resetSession();
       if (onSuccess) onSuccess();
     } catch (err: any) {
-      console.warn('Network error during session save, fallback to offline queue:', err?.message);
-      // Enqueue to offline storage for background auto-sync when network returns
-      await workoutSyncQueue.enqueue(sessionPayload);
-      showWarning(
-        `Offline: Workout "${title}" saved locally. Will auto-sync when back online.`,
-        'Saved Offline'
-      );
-      resetSession();
-      if (onSuccess) onSuccess();
+      if (!editingSessionId) {
+        console.warn('Network error during session save, fallback to offline queue:', err?.message);
+        await workoutSyncQueue.enqueue(sessionPayload);
+        showWarning(
+          `Offline: Workout "${title}" saved locally. Will auto-sync when back online.`,
+          'Saved Offline'
+        );
+        resetSession();
+        if (onSuccess) onSuccess();
+      } else {
+        console.error('Error updating workout session:', err);
+        showError(err?.message || 'Failed to update workout session', 'Error');
+      }
     } finally {
       setSubmitting(false);
     }
-  }, [exercises, elapsedSeconds, mode, startTime, title, resetSession, onSuccess, showSuccess, showWarning]);
+  }, [exercises, elapsedSeconds, mode, startTime, title, editingSessionId, resetSession, onSuccess, showSuccess, showError, showWarning]);
 
   // Derived stats
   const totalSetsCount = exercises.reduce((acc, e) => acc + e.sets.length, 0);
@@ -254,6 +222,8 @@ export function useActiveWorkout(onSuccess?: () => void) {
     elapsedSeconds,
     exercises,
     submitting,
+    editingSessionId,
+    loadSessionForEdit,
     startSession,
     resetSession,
     addExercise,
