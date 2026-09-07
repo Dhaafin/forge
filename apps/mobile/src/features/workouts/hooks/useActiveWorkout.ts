@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { workoutsService, WorkoutSetPayload } from '../services/workouts.service';
+import { workoutsService, WorkoutSetPayload, CreateWorkoutSessionPayload } from '../services/workouts.service';
+import { workoutSyncQueue } from '../services/workoutSyncQueue';
 import { useFlashMessage } from '@/ctx/flash-message-context';
 
 export interface ActiveSet {
@@ -33,6 +34,28 @@ export function useActiveWorkout(onSuccess?: () => void) {
   const [submitting, setSubmitting] = useState(false);
 
   const timerRef = useRef<any>(null);
+
+  // Auto-sync listener on mount
+  useEffect(() => {
+    const unsubscribe = workoutSyncQueue.initAutoSyncListener((item) => {
+      showSuccess(
+        `Workout "${item.payload.title || 'Session'}" synced to server!`,
+        'Offline Sync Completed'
+      );
+    });
+
+    // Also process existing queue on initial mount if online
+    workoutSyncQueue.processQueue((item) => {
+      showSuccess(
+        `Workout "${item.payload.title || 'Session'}" synced to server!`,
+        'Offline Sync Completed'
+      );
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, [showSuccess]);
 
   // Live Timer Effect
   useEffect(() => {
@@ -183,29 +206,37 @@ export function useActiveWorkout(onSuccess?: () => void) {
     }
 
     setSubmitting(true);
+    const calculatedDuration = Math.max(1, Math.round(elapsedSeconds / 60));
+    const now = new Date();
+    const calculatedStart = mode === 'live' ? startTime.toISOString() : new Date(now.getTime() - calculatedDuration * 60000).toISOString();
+
+    const sessionPayload: CreateWorkoutSessionPayload = {
+      title: title.trim() || 'Workout Session',
+      durationMinutes: calculatedDuration,
+      startTime: calculatedStart,
+      endTime: now.toISOString(),
+      sets: payloadSets,
+    };
+
     try {
-      const calculatedDuration = Math.max(1, Math.round(elapsedSeconds / 60));
-      const now = new Date();
-      const calculatedStart = mode === 'live' ? startTime.toISOString() : new Date(now.getTime() - calculatedDuration * 60000).toISOString();
-
-      await workoutsService.createSession({
-        title: title.trim() || 'Workout Session',
-        durationMinutes: calculatedDuration,
-        startTime: calculatedStart,
-        endTime: now.toISOString(),
-        sets: payloadSets,
-      });
-
+      await workoutsService.createSession(sessionPayload);
       showSuccess(`Workout "${title}" saved successfully!`, 'Session Completed');
       resetSession();
       if (onSuccess) onSuccess();
     } catch (err: any) {
-      console.error('Error saving workout session:', err);
-      showError(err?.message || 'Failed to save workout session', 'Error');
+      console.warn('Network error during session save, fallback to offline queue:', err?.message);
+      // Enqueue to offline storage for background auto-sync when network returns
+      await workoutSyncQueue.enqueue(sessionPayload);
+      showWarning(
+        `Offline: Workout "${title}" saved locally. Will auto-sync when back online.`,
+        'Saved Offline'
+      );
+      resetSession();
+      if (onSuccess) onSuccess();
     } finally {
       setSubmitting(false);
     }
-  }, [exercises, elapsedSeconds, mode, startTime, title, resetSession, onSuccess, showSuccess, showError, showWarning]);
+  }, [exercises, elapsedSeconds, mode, startTime, title, resetSession, onSuccess, showSuccess, showWarning]);
 
   // Derived stats
   const totalSetsCount = exercises.reduce((acc, e) => acc + e.sets.length, 0);
