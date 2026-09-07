@@ -7,7 +7,6 @@ import {
   TouchableWithoutFeedback,
   FlatList,
   ScrollView,
-  ActivityIndicator,
   PanResponder,
 } from 'react-native';
 import Animated, {
@@ -166,10 +165,7 @@ export const ExercisePickerBottomSheet: React.FC<ExercisePickerBottomSheetProps>
           <View style={styles.accordionContainer}>
             {isHistoryLoading ? (
               <View style={styles.centerPadding}>
-                <ActivityIndicator size="small" color={Colors.racingRed} />
-                <Typography variant="caption" color={Colors.textSecondary} style={{ marginTop: 6 }}>
-                  Loading history stats...
-                </Typography>
+                <Skeleton width="80%" height={24} borderRadius={8} />
               </View>
             ) : historyData && (historyData.all_time_max_weight > 0 || historyData.history.length > 0) ? (
               <View style={styles.historyContent}>
@@ -369,7 +365,9 @@ export const ExercisePickerBottomSheet: React.FC<ExercisePickerBottomSheetProps>
                 onEndReachedThreshold={0.4}
                 ListFooterComponent={
                   loadingMore ? (
-                    <ActivityIndicator size="small" color={Colors.racingRed} style={{ paddingVertical: 16 }} />
+                    <View style={{ paddingVertical: 12, alignItems: 'center' }}>
+                      <Skeleton width={120} height={14} borderRadius={4} />
+                    </View>
                   ) : null
                 }
               />

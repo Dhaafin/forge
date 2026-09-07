@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { View, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
@@ -7,7 +7,7 @@ import { LogOut, Gauge } from 'lucide-react-native';
 
 import { useAuth } from '@/ctx/auth-context';
 import { Colors } from '@/theme/colors';
-import { Typography, Button, Badge } from '@/components/ui';
+import { Typography, Button, Badge, Skeleton } from '@/components/ui';
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -23,7 +23,7 @@ export default function HomeScreen() {
   if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={Colors.racingRed} />
+        <Skeleton width={180} height={24} borderRadius={12} />
       </View>
     );
   }
