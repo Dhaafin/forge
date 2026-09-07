@@ -11,6 +11,7 @@ export interface WorkoutSetPayload {
 }
 
 export interface CreateWorkoutSessionPayload {
+  clientSessionId?: string;
   title?: string;
   durationMinutes?: number;
   startTime?: string;

@@ -27,10 +27,13 @@ export const workoutSyncQueue = {
   /** Enqueue a newly finished workout when offline or connection is poor */
   async enqueue(payload: CreateWorkoutSessionPayload): Promise<QueuedWorkoutItem> {
     const queue = await this.getQueue();
+    const itemId = payload.clientSessionId || `session_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+    const payloadWithId = { ...payload, clientSessionId: itemId };
+
     const item: QueuedWorkoutItem = {
-      id: `session_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
+      id: itemId,
       createdAt: new Date().toISOString(),
-      payload,
+      payload: payloadWithId,
       retryCount: 0,
     };
     queue.push(item);

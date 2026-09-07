@@ -59,6 +59,7 @@ export const SessionQuerySchema = z.object({
 });
 
 export const CreateSessionSchema = z.object({
+  clientSessionId: z.string().optional(),
   title: z.string().max(200).optional(),
   startTime: z.string().datetime({ offset: true }).optional().or(z.string()),
   endTime: z.string().datetime({ offset: true }).optional().or(z.string()),
