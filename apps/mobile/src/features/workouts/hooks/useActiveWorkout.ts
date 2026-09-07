@@ -91,6 +91,95 @@ export function useActiveWorkout(onSuccess?: () => void) {
     if (timerRef.current) clearInterval(timerRef.current);
   }, []);
 
+  const addExercise = useCallback((ex: { id: string; name: string; targetMuscle: string }) => {
+    const instanceId = `${ex.id}-${Date.now()}`;
+    const initialSet: ActiveSet = {
+      id: `${instanceId}-set-1`,
+      setNumber: 1,
+      weightKg: 0,
+      reps: 10,
+      setType: 'normal',
+      completed: false,
+    };
+
+    setExercises((prev) => [
+      ...prev,
+      {
+        id: instanceId,
+        exerciseId: ex.id,
+        name: ex.name,
+        targetMuscle: ex.targetMuscle,
+        sets: [initialSet],
+      },
+    ]);
+  }, []);
+
+  const removeExercise = useCallback((instanceId: string) => {
+    setExercises((prev) => prev.filter((e) => e.id !== instanceId));
+  }, []);
+
+  const addSet = useCallback((instanceId: string) => {
+    setExercises((prev) =>
+      prev.map((ex) => {
+        if (ex.id !== instanceId) return ex;
+
+        const lastSet = ex.sets[ex.sets.length - 1];
+        const nextSetNumber = ex.sets.length + 1;
+        const newSet: ActiveSet = {
+          id: `${instanceId}-set-${nextSetNumber}-${Date.now()}`,
+          setNumber: nextSetNumber,
+          weightKg: lastSet ? lastSet.weightKg : 0,
+          reps: lastSet ? lastSet.reps : 10,
+          setType: 'normal',
+          completed: false,
+        };
+
+        return { ...ex, sets: [...ex.sets, newSet] };
+      })
+    );
+  }, []);
+
+  const updateSet = useCallback(
+    (instanceId: string, setId: string, updates: Partial<ActiveSet>) => {
+      setExercises((prev) =>
+        prev.map((ex) => {
+          if (ex.id !== instanceId) return ex;
+
+          const updatedSets = ex.sets.map((s) => (s.id === setId ? { ...s, ...updates } : s));
+          return { ...ex, sets: updatedSets };
+        })
+      );
+    },
+    []
+  );
+
+  const removeSet = useCallback((instanceId: string, setId: string) => {
+    setExercises((prev) =>
+      prev.map((ex) => {
+        if (ex.id !== instanceId) return ex;
+
+        const filteredSets = ex.sets
+          .filter((s) => s.id !== setId)
+          .map((s, index) => ({ ...s, setNumber: index + 1 }));
+
+        return { ...ex, sets: filteredSets };
+      })
+    );
+  }, []);
+
+  const toggleSetComplete = useCallback((instanceId: string, setId: string) => {
+    setExercises((prev) =>
+      prev.map((ex) => {
+        if (ex.id !== instanceId) return ex;
+
+        const updatedSets = ex.sets.map((s) =>
+          s.id === setId ? { ...s, completed: !s.completed } : s
+        );
+        return { ...ex, sets: updatedSets };
+      })
+    );
+  }, []);
+
   const loadSessionForEdit = useCallback(async (sessionId: string) => {
     setSubmitting(true);
     try {
