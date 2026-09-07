@@ -79,7 +79,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (response.token && response.user) {
         await setAccessToken(response.token);
-        await setRefreshToken(response.token);
+        await setRefreshToken(response.refreshToken || response.token);
         await setStoredUser(response.user);
         await saveRememberMePref(remember);
 
