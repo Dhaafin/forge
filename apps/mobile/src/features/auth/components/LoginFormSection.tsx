@@ -5,7 +5,7 @@ import { Shield, Lock, User, AlertCircle } from 'lucide-react-native';
 import { Typography, Button, Input, Checkbox } from '@/components/ui';
 import { Colors } from '@/theme/colors';
 import { useLoginForm } from '../hooks/useLoginForm';
-import { useFlashMessage } from '@/ctx/flash-message-context';
+import { useFlashMessage } from '@/providers';
 
 export interface LoginFormSectionProps {
   onSuccess?: () => void;

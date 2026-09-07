@@ -4,7 +4,7 @@ import { Trash2 } from 'lucide-react-native';
 
 import { exercisesService, ExerciseItem } from '../services/exercises.service';
 import { Typography, Button, BottomSheetModal } from '@/components/ui';
-import { useFlashMessage } from '@/ctx/flash-message-context';
+import { useFlashMessage } from '@/providers';
 import { Colors } from '@/theme/colors';
 
 export interface DeleteExerciseBottomSheetProps {

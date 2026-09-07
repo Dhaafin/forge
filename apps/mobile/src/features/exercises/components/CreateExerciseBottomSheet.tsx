@@ -5,7 +5,7 @@ import { Plus } from 'lucide-react-native';
 import { exercisesService, ExerciseItem } from '../services/exercises.service';
 import { ExerciseForm } from './ExerciseForm';
 import { BottomSheetModal } from '@/components/ui';
-import { useFlashMessage } from '@/ctx/flash-message-context';
+import { useFlashMessage } from '@/providers';
 
 export interface CreateExerciseBottomSheetProps {
   visible: boolean;

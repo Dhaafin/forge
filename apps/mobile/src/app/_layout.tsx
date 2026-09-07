@@ -14,9 +14,11 @@ import {
   Poppins_500Medium,
   Poppins_600SemiBold,
 } from '@expo-google-fonts/poppins';
-import { AuthProvider } from '@/ctx/auth-context';
-import { FlashMessageProvider } from '@/ctx/flash-message-context';
-import { OfflineQueryProvider } from '@/providers/OfflineQueryProvider';
+import {
+  AuthProvider,
+  FlashMessageProvider,
+  OfflineQueryProvider,
+} from '@/providers';
 import { ActionBar } from '@/components/navigation/ActionBar';
 
 SplashScreen.preventAutoHideAsync();

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { workoutsService, WorkoutSetPayload, CreateWorkoutSessionPayload } from '../services/workouts.service';
 import { workoutSyncQueue } from '../services/workoutSyncQueue';
-import { useFlashMessage } from '@/ctx/flash-message-context';
+import { useFlashMessage } from '@/providers';
 import { queryClient } from '@/providers/OfflineQueryProvider';
 
 export interface ActiveSet {

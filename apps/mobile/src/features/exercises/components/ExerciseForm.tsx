@@ -6,7 +6,7 @@ import {
   ScrollView,
 } from 'react-native';
 import { Typography, Input, Button } from '@/components/ui';
-import { useFlashMessage } from '@/ctx/flash-message-context';
+import { useFlashMessage } from '@/providers';
 import { Colors } from '@/theme/colors';
 
 export const TARGET_MUSCLES = [

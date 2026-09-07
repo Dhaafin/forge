@@ -5,7 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
 import { LogOut, Gauge } from 'lucide-react-native';
 
-import { useAuth } from '@/ctx/auth-context';
+import { useAuth } from '@/providers';
 import { Colors } from '@/theme/colors';
 import { Typography, Button, Badge, Skeleton } from '@/components/ui';
 
