@@ -11,6 +11,8 @@ export interface QueuedWorkoutItem {
   retryCount: number;
 }
 
+let isProcessing = false;
+
 export const workoutSyncQueue = {
   /** Fetch all pending workout items from AsyncStorage */
   async getQueue(): Promise<QueuedWorkoutItem[]> {
@@ -32,35 +34,48 @@ export const workoutSyncQueue = {
       retryCount: 0,
     };
     queue.push(item);
-    await AsyncStorage.setItem(QUEUE_STORAGE_KEY, JSON.stringify(queue));
+    try {
+      await AsyncStorage.setItem(QUEUE_STORAGE_KEY, JSON.stringify(queue));
+    } catch (err) {
+      console.error('Failed to persist workout item to AsyncStorage:', err);
+    }
     return item;
   },
 
-  /** Process pending workouts queue sequentially (FIFO) */
+  /** Process pending workouts queue sequentially (FIFO) with concurrency mutex lock */
   async processQueue(
     onSuccess?: (item: QueuedWorkoutItem) => void,
     onError?: (err: any) => void
   ): Promise<void> {
-    const netState = await NetInfo.fetch();
-    if (!netState.isConnected) return;
+    if (isProcessing) return; // Prevent concurrent sync loops
+    isProcessing = true;
 
-    const queue = await this.getQueue();
-    if (queue.length === 0) return;
+    try {
+      const netState = await NetInfo.fetch();
+      if (!netState.isConnected) return;
 
-    const remainingQueue: QueuedWorkoutItem[] = [];
+      const queue = await this.getQueue();
+      if (queue.length === 0) return;
 
-    for (const item of queue) {
-      try {
-        await workoutsService.createSession(item.payload);
-        if (onSuccess) onSuccess(item);
-      } catch (err) {
-        item.retryCount += 1;
-        remainingQueue.push(item);
-        if (onError) onError(err);
+      const remainingQueue: QueuedWorkoutItem[] = [];
+
+      for (const item of queue) {
+        try {
+          await workoutsService.createSession(item.payload);
+          if (onSuccess) onSuccess(item);
+        } catch (err) {
+          item.retryCount += 1;
+          remainingQueue.push(item);
+          if (onError) onError(err);
+        }
       }
-    }
 
-    await AsyncStorage.setItem(QUEUE_STORAGE_KEY, JSON.stringify(remainingQueue));
+      await AsyncStorage.setItem(QUEUE_STORAGE_KEY, JSON.stringify(remainingQueue));
+    } catch (err) {
+      console.error('Error processing workout sync queue:', err);
+    } finally {
+      isProcessing = false;
+    }
   },
 
   /** Listen for network status changes and trigger processQueue automatically when back online */
