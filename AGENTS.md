@@ -34,3 +34,8 @@
 - **Primary Backend API**: The active backend service for Forge is Next.js API in `apps/web/app/api/`.
 - **Ignore FastAPI (`forge-api`)**: Do NOT write, target, or design logic for FastAPI (`forge-api`). `forge-api` is strictly an old reference repository and is not active.
 - **CamelCase Schema Standard**: All API request bodies and Zod validation schemas (`apps/web/lib/validations.ts`) use clean camelCase conventions (e.g., `exerciseId`, `setNumber`, `weightKg`, `sequenceOrder`, `durationMinutes`, `startTime`, `endTime`). Mobile app payloads must always send clean camelCase objects.
+
+## 5. Package Manager Standard (`pnpm`)
+- **ALWAYS use `pnpm`** for all package management, script execution, and dependency installations across the entire monorepo (e.g., `pnpm --filter @repo/mobile add <pkg>`, `pnpm --filter @repo/mobile dlx expo install <pkg>`, `pnpm dev`).
+- **Do NOT use `npm` or `yarn`** under any circumstances.
+
