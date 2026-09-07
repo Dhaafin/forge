@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { workoutsService, WorkoutSetPayload, CreateWorkoutSessionPayload } from '../services/workouts.service';
 import { workoutSyncQueue } from '../services/workoutSyncQueue';
 import { useFlashMessage } from '@/ctx/flash-message-context';
+import { queryClient } from '@/providers/OfflineQueryProvider';
 
 export interface ActiveSet {
   id: string;
@@ -37,20 +38,18 @@ export function useActiveWorkout(onSuccess?: () => void) {
 
   // Auto-sync listener on mount
   useEffect(() => {
-    const unsubscribe = workoutSyncQueue.initAutoSyncListener((item) => {
+    const handleSynced = (item: any) => {
       showSuccess(
         `Workout "${item.payload.title || 'Session'}" synced to server!`,
         'Offline Sync Completed'
       );
-    });
+      queryClient.invalidateQueries();
+    };
+
+    const unsubscribe = workoutSyncQueue.initAutoSyncListener(handleSynced);
 
     // Also process existing queue on initial mount if online
-    workoutSyncQueue.processQueue((item) => {
-      showSuccess(
-        `Workout "${item.payload.title || 'Session'}" synced to server!`,
-        'Offline Sync Completed'
-      );
-    });
+    workoutSyncQueue.processQueue(handleSynced);
 
     return () => {
       unsubscribe();
@@ -220,6 +219,7 @@ export function useActiveWorkout(onSuccess?: () => void) {
 
     try {
       await workoutsService.createSession(sessionPayload);
+      queryClient.invalidateQueries();
       showSuccess(`Workout "${title}" saved successfully!`, 'Session Completed');
       resetSession();
       if (onSuccess) onSuccess();
