@@ -57,6 +57,26 @@ export const workoutsService = {
     });
   },
 
+  /** Fetch single workout session details by ID */
+  async getSessionById(sessionId: string): Promise<any> {
+    return apiFetch<any>(`${ApiConfig.endpoints.workouts.sessions}/${sessionId}`);
+  },
+
+  /** Update an existing logged workout session */
+  async updateSession(sessionId: string, payload: Partial<CreateWorkoutSessionPayload>): Promise<any> {
+    return apiFetch<any>(`${ApiConfig.endpoints.workouts.sessions}/${sessionId}`, {
+      method: 'PUT',
+      body: JSON.stringify(payload),
+    });
+  },
+
+  /** Delete a logged workout session */
+  async deleteSession(sessionId: string): Promise<void> {
+    return apiFetch<void>(`${ApiConfig.endpoints.workouts.sessions}/${sessionId}`, {
+      method: 'DELETE',
+    });
+  },
+
   /** Fetch exercise history, 1RM stats, and past session set logs */
   async getExerciseHistory(exerciseId: string, limit = 5): Promise<ExerciseHistoryDetails> {
     const endpoint = `${ApiConfig.endpoints.exercises}/${exerciseId}/history?limit=${limit}`;
