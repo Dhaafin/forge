@@ -44,23 +44,50 @@ export const historyService = {
 
     const res = await apiFetch<any>(endpoint);
 
-    // Support both direct array format (from FastAPI directly) or wrapped { data, meta }
+    const mapItem = (item: any): WorkoutSessionItem => {
+      let calculatedSetsCount = 0;
+      let calculatedVolumeKg = 0;
+
+      if (Array.isArray(item.sets)) {
+        calculatedSetsCount = item.sets.length;
+        calculatedVolumeKg = item.sets.reduce(
+          (sum: number, s: any) => sum + ((Number(s.weight_kg ?? s.weightKg) || 0) * (Number(s.reps) || 0)),
+          0
+        );
+      } else {
+        calculatedSetsCount = Number(item.setsCount ?? item.sets_count ?? 0);
+        calculatedVolumeKg = Number(item.totalVolumeKg ?? item.total_volume_kg ?? 0);
+      }
+
+      return {
+        id: item.id,
+        userId: item.user_id || item.userId,
+        title: item.title || 'Workout Session',
+        startTime: item.start_time || item.startTime,
+        endTime: item.end_time || item.endTime,
+        durationMinutes: item.duration_minutes ?? item.durationMinutes ?? 0,
+        setsCount: calculatedSetsCount,
+        totalVolumeKg: Math.round(calculatedVolumeKg * 10) / 10,
+      };
+    };
+
     if (Array.isArray(res)) {
       return {
-        data: res.map((item: any) => ({
-          id: item.id,
-          userId: item.user_id || item.userId,
-          title: item.title || 'Workout Session',
-          startTime: item.start_time || item.startTime,
-          endTime: item.end_time || item.endTime,
-          durationMinutes: item.duration_minutes ?? item.durationMinutes ?? 0,
-          setsCount: item.sets ? item.sets.length : 0,
-          totalVolumeKg: item.sets
-            ? item.sets.reduce((sum: number, s: any) => sum + ((s.weight_kg || s.weightKg || 0) * (s.reps || 0)), 0)
-            : 0,
-        })),
+        data: res.map(mapItem),
         meta: {
           total: res.length,
+          limit: query.limit || 20,
+          offset: query.offset || 0,
+          hasMore: false,
+        },
+      };
+    }
+
+    if (res && Array.isArray(res.data)) {
+      return {
+        data: res.data.map(mapItem),
+        meta: res.meta || {
+          total: res.data.length,
           limit: query.limit || 20,
           offset: query.offset || 0,
           hasMore: false,

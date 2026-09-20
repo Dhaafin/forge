@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db, workoutSessions } from '@repo/db';
-import { eq, and, ilike, gte, lte, asc, desc, count, SQL } from 'drizzle-orm';
+import { eq, and, ilike, gte, lte, asc, desc, count, sql, SQL } from 'drizzle-orm';
 import { createSession } from '@/lib/workouts/session';
 import { SessionQuerySchema, CreateSessionSchema } from '@/lib/validations';
 import { getUserIdFromRequest } from '@/lib/auth';
@@ -61,7 +61,24 @@ export async function GET(request: Request) {
       .where(combinedWhere);
 
     const sessions = await db
-      .select()
+      .select({
+        id: workoutSessions.id,
+        userId: workoutSessions.userId,
+        title: workoutSessions.title,
+        startTime: workoutSessions.startTime,
+        endTime: workoutSessions.endTime,
+        durationMinutes: workoutSessions.durationMinutes,
+        setsCount: sql<number>`coalesce((
+          SELECT count(*)::int
+          FROM workout_sets
+          WHERE workout_sets.session_id = ${workoutSessions.id}
+        ), 0)`,
+        totalVolumeKg: sql<number>`coalesce((
+          SELECT sum(weight_kg * reps)::real
+          FROM workout_sets
+          WHERE workout_sets.session_id = ${workoutSessions.id}
+        ), 0)`,
+      })
       .from(workoutSessions)
       .where(combinedWhere)
       .orderBy(order === 'asc' ? asc(sortCol) : desc(sortCol))
