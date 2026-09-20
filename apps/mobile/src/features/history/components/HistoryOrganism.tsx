@@ -83,7 +83,7 @@ export const HistoryOrganism: React.FC = () => {
   };
 
   const handleEditSession = (sessionId: string) => {
-    router.push({ pathname: '/workout', params: { sessionId } });
+    router.push({ pathname: '/workout', params: { sessionId, mode: 'past' } });
   };
 
   const renderSessionItem = ({ item, index }: { item: WorkoutSessionItem; index: number }) => (

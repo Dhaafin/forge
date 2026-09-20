@@ -43,6 +43,7 @@ export const ActiveWorkoutOrganism: React.FC<ActiveWorkoutOrganismProps> = ({
   };
 
   const {
+    mode: activeMode,
     title,
     setTitle,
     elapsedSeconds,
@@ -144,7 +145,7 @@ export const ActiveWorkoutOrganism: React.FC<ActiveWorkoutOrganismProps> = ({
       <ActiveWorkoutHeader
         title={title}
         setTitle={setTitle}
-        mode={mode}
+        mode={activeMode}
         onDiscard={handleDiscard}
       />
 
@@ -153,7 +154,7 @@ export const ActiveWorkoutOrganism: React.FC<ActiveWorkoutOrganismProps> = ({
         elapsedSeconds={elapsedSeconds}
         totalSetsCount={totalSetsCount}
         totalVolumeKg={totalVolumeKg}
-        mode={mode}
+        mode={activeMode}
       />
 
       {/* Action Button: Add Exercise under HUD */}
