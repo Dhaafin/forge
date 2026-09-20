@@ -1,9 +1,34 @@
+import { Platform } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const ACCESS_TOKEN_KEY = 'forge_access_token';
 const REFRESH_TOKEN_KEY = 'forge_refresh_token';
 const REMEMBER_ME_KEY = 'forge_remember_me';
 const USER_KEY = 'forge_user_data';
+
+const isWeb = Platform.OS === 'web';
+
+async function getItem(key: string): Promise<string | null> {
+  if (isWeb) {
+    return AsyncStorage.getItem(key);
+  }
+  return SecureStore.getItemAsync(key);
+}
+
+async function setItem(key: string, value: string): Promise<void> {
+  if (isWeb) {
+    return AsyncStorage.setItem(key, value);
+  }
+  return SecureStore.setItemAsync(key, value);
+}
+
+async function deleteItem(key: string): Promise<void> {
+  if (isWeb) {
+    return AsyncStorage.removeItem(key);
+  }
+  return SecureStore.deleteItemAsync(key);
+}
 
 export interface StoredUser {
   id: string;
@@ -15,18 +40,18 @@ export interface StoredUser {
 
 export async function getAccessToken(): Promise<string | null> {
   try {
-    return await SecureStore.getItemAsync(ACCESS_TOKEN_KEY);
+    return await getItem(ACCESS_TOKEN_KEY);
   } catch (error) {
-    console.error('Error reading access token from SecureStore:', error);
+    console.error('Error reading access token from storage:', error);
     return null;
   }
 }
 
 export async function setAccessToken(token: string): Promise<void> {
   try {
-    await SecureStore.setItemAsync(ACCESS_TOKEN_KEY, token);
+    await setItem(ACCESS_TOKEN_KEY, token);
   } catch (error) {
-    console.error('Error saving access token to SecureStore:', error);
+    console.error('Error saving access token to storage:', error);
   }
 }
 
@@ -34,18 +59,18 @@ export async function setAccessToken(token: string): Promise<void> {
 
 export async function getRefreshToken(): Promise<string | null> {
   try {
-    return await SecureStore.getItemAsync(REFRESH_TOKEN_KEY);
+    return await getItem(REFRESH_TOKEN_KEY);
   } catch (error) {
-    console.error('Error reading refresh token from SecureStore:', error);
+    console.error('Error reading refresh token from storage:', error);
     return null;
   }
 }
 
 export async function setRefreshToken(token: string): Promise<void> {
   try {
-    await SecureStore.setItemAsync(REFRESH_TOKEN_KEY, token);
+    await setItem(REFRESH_TOKEN_KEY, token);
   } catch (error) {
-    console.error('Error saving refresh token to SecureStore:', error);
+    console.error('Error saving refresh token to storage:', error);
   }
 }
 
@@ -53,7 +78,7 @@ export async function setRefreshToken(token: string): Promise<void> {
 
 export async function getRememberMe(): Promise<boolean> {
   try {
-    const value = await SecureStore.getItemAsync(REMEMBER_ME_KEY);
+    const value = await getItem(REMEMBER_ME_KEY);
     return value === 'true';
   } catch {
     return false;
@@ -62,7 +87,7 @@ export async function getRememberMe(): Promise<boolean> {
 
 export async function setRememberMe(remember: boolean): Promise<void> {
   try {
-    await SecureStore.setItemAsync(REMEMBER_ME_KEY, remember ? 'true' : 'false');
+    await setItem(REMEMBER_ME_KEY, remember ? 'true' : 'false');
   } catch (error) {
     console.error('Error setting remember me preference:', error);
   }
@@ -72,7 +97,7 @@ export async function setRememberMe(remember: boolean): Promise<void> {
 
 export async function getStoredUser(): Promise<StoredUser | null> {
   try {
-    const raw = await SecureStore.getItemAsync(USER_KEY);
+    const raw = await getItem(USER_KEY);
     return raw ? JSON.parse(raw) : null;
   } catch {
     return null;
@@ -81,9 +106,9 @@ export async function getStoredUser(): Promise<StoredUser | null> {
 
 export async function setStoredUser(user: StoredUser): Promise<void> {
   try {
-    await SecureStore.setItemAsync(USER_KEY, JSON.stringify(user));
+    await setItem(USER_KEY, JSON.stringify(user));
   } catch (error) {
-    console.error('Error saving user data to SecureStore:', error);
+    console.error('Error saving user data to storage:', error);
   }
 }
 
@@ -91,9 +116,9 @@ export async function setStoredUser(user: StoredUser): Promise<void> {
 
 export async function clearAuthTokens(): Promise<void> {
   try {
-    await SecureStore.deleteItemAsync(ACCESS_TOKEN_KEY);
-    await SecureStore.deleteItemAsync(REFRESH_TOKEN_KEY);
-    await SecureStore.deleteItemAsync(USER_KEY);
+    await deleteItem(ACCESS_TOKEN_KEY);
+    await deleteItem(REFRESH_TOKEN_KEY);
+    await deleteItem(USER_KEY);
     // Keep REMEMBER_ME_KEY so preference remains when opening app next time
   } catch (error) {
     console.error('Error clearing auth tokens:', error);
