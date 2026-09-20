@@ -17,7 +17,7 @@ import {
   Clock,
   Dumbbell,
   Plus,
-  Edit2,
+  ChevronRight,
 } from 'lucide-react-native';
 
 import { useWorkoutHistory } from '../hooks/useWorkoutHistory';
@@ -96,18 +96,19 @@ export const HistoryOrganism: React.FC = () => {
         onPress={() => handleEditSession(item.id)}
         style={styles.cardTouchable}
       >
-        {/* Left Edge Accent Stripe */}
+        {/* Left Edge Motorsport Accent Stripe */}
         <View style={styles.cardStripe}>
           <View style={[styles.stripePart, { backgroundColor: Colors.racingRed }]} />
           <View style={[styles.stripePart, { backgroundColor: Colors.motorsportBlue }]} />
         </View>
 
-        <View style={styles.cardInner}>
+        {/* Card Header: Icon, Title, Date, Chevron */}
+        <View style={styles.cardHeader}>
           <View style={styles.cardIconCircle}>
             <Calendar size={16} color={Colors.racingRed} />
           </View>
 
-          <View style={styles.cardMain}>
+          <View style={styles.cardHeaderText}>
             <Typography variant="h3" style={styles.sessionTitle} numberOfLines={1}>
               {item.title}
             </Typography>
@@ -117,34 +118,48 @@ export const HistoryOrganism: React.FC = () => {
               <Typography variant="caption" color={Colors.textSecondary}>
                 {formatDate(item.startTime)}
               </Typography>
-              {item.durationMinutes ? (
-                <Typography variant="caption" color={Colors.textSecondary} style={{ marginLeft: 6 }}>
-                  • {item.durationMinutes} min
-                </Typography>
-              ) : null}
             </View>
           </View>
 
-          <View style={styles.badgeColumn}>
-            <View style={styles.badgeRowWithEdit}>
-              {item.setsCount ? (
-                <Badge
-                  label={`${item.setsCount} sets`}
-                  variant="dark"
-                  style={styles.badge}
-                />
-              ) : null}
-              <Edit2 size={13} color={Colors.textSecondary} style={{ marginLeft: 4 }} />
-            </View>
-            {item.totalVolumeKg ? (
-              <Badge
-                label={`${Math.round(item.totalVolumeKg)} kg`}
-                variant="primary"
-                style={styles.badge}
-              />
-            ) : (
-              <Badge label="Logged" variant="cyan" style={styles.badge} />
-            )}
+          <View style={styles.chevronWrapper}>
+            <ChevronRight size={16} color={Colors.textSecondary} />
+          </View>
+        </View>
+
+        {/* Divider */}
+        <View style={styles.cardDivider} />
+
+        {/* Telemetry Stat Grid (3 Columns: Time, Volume, Sets) */}
+        <View style={styles.statGrid}>
+          <View style={styles.statCol}>
+            <Typography variant="caption" style={styles.statLabel}>
+              TIME
+            </Typography>
+            <Typography variant="body" bold style={styles.statValue}>
+              {item.durationMinutes ? `${item.durationMinutes} min` : '-'}
+            </Typography>
+          </View>
+
+          <View style={styles.statDivider} />
+
+          <View style={styles.statCol}>
+            <Typography variant="caption" style={styles.statLabel}>
+              VOLUME
+            </Typography>
+            <Typography variant="body" bold style={styles.statValue}>
+              {item.totalVolumeKg ? `${Math.round(item.totalVolumeKg)} kg` : '0 kg'}
+            </Typography>
+          </View>
+
+          <View style={styles.statDivider} />
+
+          <View style={styles.statCol}>
+            <Typography variant="caption" style={styles.statLabel}>
+              SETS
+            </Typography>
+            <Typography variant="body" bold style={styles.statValue}>
+              {item.setsCount ?? 0}
+            </Typography>
           </View>
         </View>
       </TouchableOpacity>
@@ -208,12 +223,31 @@ export const HistoryOrganism: React.FC = () => {
         <View style={styles.skeletonList}>
           {[1, 2, 3, 4, 5].map((key) => (
             <View key={key} style={styles.skeletonCard}>
-              <Skeleton width={34} height={34} borderRadius={17} style={{ marginRight: 12 }} />
-              <View style={{ flex: 1, marginRight: 12 }}>
-                <Skeleton width="60%" height={16} borderRadius={6} style={{ marginBottom: 6 }} />
-                <Skeleton width="40%" height={12} borderRadius={4} />
+              <View style={styles.skeletonTopRow}>
+                <Skeleton width={36} height={36} borderRadius={18} style={{ marginRight: 12 }} />
+                <View style={{ flex: 1, marginRight: 12 }}>
+                  <Skeleton width="60%" height={16} borderRadius={6} style={{ marginBottom: 6 }} />
+                  <Skeleton width="35%" height={12} borderRadius={4} />
+                </View>
+                <Skeleton width={22} height={22} borderRadius={11} />
               </View>
-              <Skeleton width={50} height={20} borderRadius={4} />
+              <View style={styles.cardDivider} />
+              <View style={styles.statGrid}>
+                <View style={styles.statCol}>
+                  <Skeleton width={32} height={10} borderRadius={3} style={{ marginBottom: 4 }} />
+                  <Skeleton width={44} height={14} borderRadius={4} />
+                </View>
+                <View style={styles.statDivider} />
+                <View style={styles.statCol}>
+                  <Skeleton width={44} height={10} borderRadius={3} style={{ marginBottom: 4 }} />
+                  <Skeleton width={50} height={14} borderRadius={4} />
+                </View>
+                <View style={styles.statDivider} />
+                <View style={styles.statCol}>
+                  <Skeleton width={30} height={10} borderRadius={3} style={{ marginBottom: 4 }} />
+                  <Skeleton width={32} height={14} borderRadius={4} />
+                </View>
+              </View>
             </View>
           ))}
         </View>
@@ -321,11 +355,16 @@ const styles = StyleSheet.create({
   skeletonCard: {
     backgroundColor: Colors.surfaceElevated,
     borderRadius: 14,
-    padding: 14,
     borderWidth: 1,
     borderColor: Colors.border,
+    overflow: 'hidden',
+  },
+  skeletonTopRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingTop: 14,
+    paddingBottom: 12,
   },
   card: {
     backgroundColor: Colors.surfaceElevated,
@@ -347,21 +386,26 @@ const styles = StyleSheet.create({
     bottom: 0,
     width: 4,
     flexDirection: 'column',
+    zIndex: 1,
   },
   stripePart: {
     flex: 1,
   },
-  cardInner: {
+  cardTouchable: {
+    width: '100%',
+  },
+  cardHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 14,
-    paddingHorizontal: 14,
+    paddingHorizontal: 16,
+    paddingTop: 14,
+    paddingBottom: 12,
     paddingLeft: 18,
   },
   cardIconCircle: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     backgroundColor: Colors.surface,
     alignItems: 'center',
     justifyContent: 'center',
@@ -369,14 +413,13 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: Colors.border,
   },
-  cardMain: {
+  cardHeaderText: {
     flex: 1,
-    marginRight: 8,
     justifyContent: 'center',
   },
   sessionTitle: {
-    fontSize: 14,
-    lineHeight: 18,
+    fontSize: 15,
+    lineHeight: 20,
     fontFamily: 'Poppins_600SemiBold',
     color: Colors.darkCarbon,
     includeFontPadding: false,
@@ -386,19 +429,51 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
-  cardTouchable: {
-    width: '100%',
+  chevronWrapper: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: Colors.surface,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: 8,
+    borderWidth: 1,
+    borderColor: Colors.border,
   },
-  badgeRowWithEdit: {
+  cardDivider: {
+    height: 1,
+    backgroundColor: Colors.border,
+    opacity: 0.8,
+  },
+  statGrid: {
     flexDirection: 'row',
     alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    paddingLeft: 18,
+    backgroundColor: '#FAFAFB',
   },
-  badgeColumn: {
-    alignItems: 'flex-end',
-    gap: 4,
+  statCol: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  badge: {
-    marginLeft: 4,
+  statLabel: {
+    fontSize: 10,
+    fontFamily: 'Inter_700Bold',
+    letterSpacing: 0.8,
+    color: Colors.textSecondary,
+    marginBottom: 2,
+  },
+  statValue: {
+    fontSize: 13,
+    fontFamily: 'Inter_700Bold',
+    color: Colors.darkCarbon,
+  },
+  statDivider: {
+    width: 1,
+    height: 20,
+    backgroundColor: Colors.border,
   },
   centerContainer: {
     flex: 1,
