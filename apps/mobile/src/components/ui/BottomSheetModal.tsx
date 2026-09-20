@@ -1,15 +1,20 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Modal,
   View,
   StyleSheet,
   TouchableOpacity,
-  TouchableWithoutFeedback,
   KeyboardAvoidingView,
   Platform,
   ViewStyle,
   StyleProp,
 } from 'react-native';
+import Animated, {
+  FadeIn,
+  FadeOut,
+  SlideInDown,
+  SlideOutDown,
+} from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { X } from 'lucide-react-native';
 import { Typography } from './Typography';
@@ -42,73 +47,99 @@ export function BottomSheetModal({
 }: BottomSheetModalProps) {
   const insets = useSafeAreaInsets();
   const dynamicBottomPadding = Math.max(insets.bottom + 12, 20);
+  const [modalVisible, setModalVisible] = useState(visible);
 
-  if (!visible) return null;
+  useEffect(() => {
+    if (visible) {
+      setModalVisible(true);
+    } else {
+      const timer = setTimeout(() => {
+        setModalVisible(false);
+      }, 220);
+      return () => clearTimeout(timer);
+    }
+  }, [visible]);
+
+  if (!modalVisible && !visible) return null;
 
   return (
     <Modal
-      visible={visible}
+      visible={modalVisible}
       transparent
-      animationType="slide"
+      animationType="none"
       onRequestClose={onClose}
     >
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={styles.overlay}
       >
-        <TouchableWithoutFeedback onPress={onClose}>
-          <View style={styles.backdrop} />
-        </TouchableWithoutFeedback>
+        {visible && (
+          <Animated.View
+            entering={FadeIn.duration(200)}
+            exiting={FadeOut.duration(200)}
+            style={styles.backdrop}
+          >
+            <TouchableOpacity
+              activeOpacity={1}
+              onPress={onClose}
+              style={StyleSheet.absoluteFill}
+            />
+          </Animated.View>
+        )}
 
-        <View
-          style={[
-            styles.sheetContainer,
-            { paddingBottom: dynamicBottomPadding },
-            heightPercent ? { height: heightPercent as any } : null,
-            containerStyle,
-          ]}
-        >
-          <View style={styles.handleBar} />
+        {visible && (
+          <Animated.View
+            entering={SlideInDown.duration(250)}
+            exiting={SlideOutDown.duration(200)}
+            style={[
+              styles.sheetContainer,
+              { paddingBottom: dynamicBottomPadding },
+              heightPercent ? { height: heightPercent as any } : null,
+              containerStyle,
+            ]}
+          >
+            <View style={styles.handleBar} />
 
-          {(title || headerLeft || headerRight) && (
-            <View style={styles.header}>
-              <View style={styles.headerTitleGroup}>
-                {headerLeft}
-                <View style={styles.textColumn}>
-                  {title && (
-                    <Typography variant="h2" style={styles.titleText}>
-                      {title}
-                    </Typography>
-                  )}
-                  {subtitle && (
-                    <Typography
-                      variant="caption"
-                      color={Colors.textSecondary}
-                      style={styles.subtitleText}
-                    >
-                      {subtitle}
-                    </Typography>
-                  )}
+            {(title || headerLeft || headerRight) && (
+              <View style={styles.header}>
+                <View style={styles.headerTitleGroup}>
+                  {headerLeft}
+                  <View style={styles.textColumn}>
+                    {title && (
+                      <Typography variant="h2" style={styles.titleText}>
+                        {title}
+                      </Typography>
+                    )}
+                    {subtitle && (
+                      <Typography
+                        variant="caption"
+                        color={Colors.textSecondary}
+                        style={styles.subtitleText}
+                      >
+                        {subtitle}
+                      </Typography>
+                    )}
+                  </View>
                 </View>
+
+                {headerRight || (
+                  <TouchableOpacity
+                    onPress={onClose}
+                    activeOpacity={0.7}
+                    style={styles.closeBtn}
+                    hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                  >
+                    <X size={20} color={Colors.textSecondary} />
+                  </TouchableOpacity>
+                )}
               </View>
+            )}
 
-              {headerRight || (
-                <TouchableOpacity
-                  onPress={onClose}
-                  activeOpacity={0.7}
-                  style={styles.closeBtn}
-                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                >
-                  <X size={20} color={Colors.textSecondary} />
-                </TouchableOpacity>
-              )}
+            <View style={[styles.content, heightPercent ? styles.flexContent : null, contentStyle]}>
+              {children}
             </View>
-          )}
-
-          <View style={[styles.content, heightPercent ? styles.flexContent : null, contentStyle]}>
-            {children}
-          </View>
-        </View>
+          </Animated.View>
+        )}
       </KeyboardAvoidingView>
     </Modal>
   );
