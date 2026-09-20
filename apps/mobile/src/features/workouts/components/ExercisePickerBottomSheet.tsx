@@ -1,27 +1,13 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   StyleSheet,
-  Modal,
   TouchableOpacity,
-  TouchableWithoutFeedback,
   FlatList,
   ScrollView,
-  PanResponder,
 } from 'react-native';
-import Animated, {
-  SlideInDown,
-  SlideOutDown,
-  useSharedValue,
-  useAnimatedStyle,
-  withSpring,
-  withTiming,
-  runOnJS,
-} from 'react-native-reanimated';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   Dumbbell,
-  X,
   Search,
   ChevronDown,
   ChevronUp,
@@ -33,7 +19,7 @@ import {
 import { useExercisePicker } from '../hooks/useExercisePicker';
 import { ExerciseItem } from '@/features/exercises/services/exercises.service';
 import { CreateExerciseBottomSheet } from '@/features/exercises/components/CreateExerciseBottomSheet';
-import { Typography, Input, Badge, Button, Skeleton } from '@/components/ui';
+import { Typography, Input, Badge, Skeleton, BottomSheetModal } from '@/components/ui';
 import { Colors } from '@/theme/colors';
 
 const MUSCLE_GROUPS = [
@@ -59,7 +45,6 @@ export const ExercisePickerBottomSheet: React.FC<ExercisePickerBottomSheetProps>
   onClose,
   onSelectExercise,
 }) => {
-  const insets = useSafeAreaInsets();
   const [createSheetVisible, setCreateSheetVisible] = useState(false);
 
   const {
@@ -78,43 +63,9 @@ export const ExercisePickerBottomSheet: React.FC<ExercisePickerBottomSheetProps>
     refetch,
   } = useExercisePicker(visible);
 
-  const translateY = useSharedValue(0);
-
-  useEffect(() => {
-    if (visible) {
-      translateY.value = 0;
-    }
-  }, [visible, translateY]);
-
   const handleClose = () => {
-    translateY.value = 0;
     onClose();
   };
-
-  const panResponder = useRef(
-    PanResponder.create({
-      onStartShouldSetPanResponder: () => true,
-      onMoveShouldSetPanResponder: (_, gestureState) => gestureState.dy > 5,
-      onPanResponderMove: (_, gestureState) => {
-        if (gestureState.dy > 0) {
-          translateY.value = gestureState.dy;
-        }
-      },
-      onPanResponderRelease: (_, gestureState) => {
-        if (gestureState.dy > 60 || gestureState.vy > 0.5) {
-          translateY.value = withTiming(400, { duration: 180 }, () => {
-            runOnJS(handleClose)();
-          });
-        } else {
-          translateY.value = withSpring(0, { damping: 18, stiffness: 200 });
-        }
-      },
-    })
-  ).current;
-
-  const animatedDragStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: translateY.value }],
-  }));
 
   const handleSelectMuscle = (muscle: string) => {
     if (muscle === 'All') {
@@ -245,212 +196,121 @@ export const ExercisePickerBottomSheet: React.FC<ExercisePickerBottomSheetProps>
     );
   };
 
-  if (!visible) return null;
-
   return (
-    <Modal
+    <BottomSheetModal
       visible={visible}
-      transparent
-      animationType="fade"
-      onRequestClose={handleClose}
-    >
-      <TouchableWithoutFeedback onPress={handleClose}>
-        <View style={styles.overlay}>
-          <TouchableOpacity
-            style={styles.backdrop}
-            activeOpacity={1}
-            onPress={handleClose}
-          />
-
-          <Animated.View
-            entering={SlideInDown.duration(250)}
-            exiting={SlideOutDown.duration(200)}
-            style={[
-              styles.sheet,
-              { paddingBottom: Math.max(insets.bottom + 12, 20) },
-              animatedDragStyle,
-            ]}
-          >
-            {/* Top Handle */}
-            <View style={styles.handleContainer} {...panResponder.panHandlers}>
-              <View style={styles.handle} />
-            </View>
-
-            {/* Header */}
-            <View style={styles.header}>
-              <View style={styles.headerLeft}>
-                <View style={styles.iconCircle}>
-                  <Dumbbell size={18} color={Colors.racingRed} />
-                </View>
-                <View>
-                  <Typography variant="h3" style={styles.title}>
-                    SELECT EXERCISE
-                  </Typography>
-                  <Typography variant="caption" color={Colors.textSecondary}>
-                    Choose exercise & view 1RM history
-                  </Typography>
-                </View>
-              </View>
-
-              <TouchableOpacity
-                onPress={handleClose}
-                style={styles.closeBtn}
-                activeOpacity={0.7}
-              >
-                <X size={20} color={Colors.textSecondary} />
-              </TouchableOpacity>
-            </View>
-
-            {/* Search Input */}
-            <Input
-              placeholder="Search exercise name..."
-              value={search}
-              onChangeText={setSearch}
-              leftIcon={<Search size={18} color={Colors.textSecondary} />}
-              containerStyle={styles.searchInputContainer}
-            />
-
-            {/* Create Custom Exercise Button right under search bar */}
-            <TouchableOpacity
-              style={styles.createInlineBtn}
-              activeOpacity={0.8}
-              onPress={() => setCreateSheetVisible(true)}
-            >
-              <Plus size={14} color={Colors.racingRed} style={{ marginRight: 6 }} />
-              <Typography variant="label" color={Colors.racingRed}>
-                CREATE NEW EXERCISE
-              </Typography>
-            </TouchableOpacity>
-
-            {/* Muscle Filter Chips */}
-            <View style={styles.chipsWrapper}>
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.chipsContainer}
-              >
-                {MUSCLE_GROUPS.map((muscle) => {
-                  const isSelected =
-                    muscle === 'All' ? selectedMuscle === null : selectedMuscle === muscle;
-
-                  return (
-                    <TouchableOpacity
-                      key={muscle}
-                      style={[
-                        styles.filterChip,
-                        isSelected && styles.activeFilterChip,
-                      ]}
-                      activeOpacity={0.8}
-                      onPress={() => handleSelectMuscle(muscle)}
-                    >
-                      <Typography
-                        variant="caption"
-                        style={styles.chipText}
-                        color={isSelected ? Colors.textInverse : Colors.textSecondary}
-                      >
-                        {muscle}
-                      </Typography>
-                    </TouchableOpacity>
-                  );
-                })}
-              </ScrollView>
-            </View>
-
-            {/* Exercise List */}
-            {loading ? (
-              <View style={styles.skeletonList}>
-                {[1, 2, 3, 4, 5].map((k) => (
-                  <View key={k} style={styles.skeletonCard}>
-                    <Skeleton width={34} height={34} borderRadius={17} style={{ marginRight: 12 }} />
-                    <View style={{ flex: 1 }}>
-                      <Skeleton width="60%" height={16} borderRadius={6} />
-                    </View>
-                  </View>
-                ))}
-              </View>
-            ) : (
-              <FlatList
-                data={exercises}
-                keyExtractor={(item, index) => `${item.id}-${index}`}
-                renderItem={renderExerciseRow}
-                contentContainerStyle={styles.listContent}
-                showsVerticalScrollIndicator={false}
-                onEndReached={loadMore}
-                onEndReachedThreshold={0.4}
-                ListFooterComponent={
-                  loadingMore ? (
-                    <View style={{ paddingVertical: 12, alignItems: 'center' }}>
-                      <Skeleton width={120} height={14} borderRadius={4} />
-                    </View>
-                  ) : null
-                }
-              />
-            )}
-          </Animated.View>
-
-          {/* Integration with CreateExerciseBottomSheet */}
-          <CreateExerciseBottomSheet
-            visible={createSheetVisible}
-            onClose={() => setCreateSheetVisible(false)}
-            onSuccess={(newExercise) => {
-              refetch();
-              onSelectExercise(newExercise);
-              handleClose();
-            }}
-          />
+      onClose={handleClose}
+      title="SELECT EXERCISE"
+      subtitle="Choose exercise & view 1RM history"
+      headerLeft={
+        <View style={styles.iconCircle}>
+          <Dumbbell size={18} color={Colors.racingRed} />
         </View>
-      </TouchableWithoutFeedback>
-    </Modal>
+      }
+      heightPercent="92%"
+    >
+      {/* Search Input */}
+      <Input
+        placeholder="Search exercise name..."
+        value={search}
+        onChangeText={setSearch}
+        leftIcon={<Search size={18} color={Colors.textSecondary} />}
+        containerStyle={styles.searchInputContainer}
+      />
+
+      {/* Create Custom Exercise Button right under search bar */}
+      <TouchableOpacity
+        style={styles.createInlineBtn}
+        activeOpacity={0.8}
+        onPress={() => setCreateSheetVisible(true)}
+      >
+        <Plus size={14} color={Colors.racingRed} style={{ marginRight: 6 }} />
+        <Typography variant="label" color={Colors.racingRed}>
+          CREATE NEW EXERCISE
+        </Typography>
+      </TouchableOpacity>
+
+      {/* Muscle Filter Chips */}
+      <View style={styles.chipsWrapper}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.chipsContainer}
+        >
+          {MUSCLE_GROUPS.map((muscle) => {
+            const isSelected =
+              muscle === 'All' ? selectedMuscle === null : selectedMuscle === muscle;
+
+            return (
+              <TouchableOpacity
+                key={muscle}
+                style={[
+                  styles.filterChip,
+                  isSelected && styles.activeFilterChip,
+                ]}
+                activeOpacity={0.8}
+                onPress={() => handleSelectMuscle(muscle)}
+              >
+                <Typography
+                  variant="caption"
+                  style={styles.chipText}
+                  color={isSelected ? Colors.textInverse : Colors.textSecondary}
+                >
+                  {muscle}
+                </Typography>
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
+      </View>
+
+      {/* Exercise List */}
+      {loading ? (
+        <View style={styles.skeletonList}>
+          {[1, 2, 3, 4, 5].map((k) => (
+            <View key={k} style={styles.skeletonCard}>
+              <Skeleton width={34} height={34} borderRadius={17} style={{ marginRight: 12 }} />
+              <View style={{ flex: 1 }}>
+                <Skeleton width="60%" height={16} borderRadius={6} />
+              </View>
+            </View>
+          ))}
+        </View>
+      ) : (
+        <FlatList
+          data={exercises}
+          keyExtractor={(item, index) => `${item.id}-${index}`}
+          renderItem={renderExerciseRow}
+          style={styles.flatList}
+          contentContainerStyle={styles.listContent}
+          showsVerticalScrollIndicator={false}
+          onEndReached={loadMore}
+          onEndReachedThreshold={0.4}
+          ListFooterComponent={
+            loadingMore ? (
+              <View style={{ paddingVertical: 12, alignItems: 'center' }}>
+                <Skeleton width={120} height={14} borderRadius={4} />
+              </View>
+            ) : null
+          }
+        />
+      )}
+
+      {/* Integration with CreateExerciseBottomSheet */}
+      <CreateExerciseBottomSheet
+        visible={createSheetVisible}
+        onClose={() => setCreateSheetVisible(false)}
+        onSuccess={(newExercise) => {
+          refetch();
+          onSelectExercise(newExercise);
+          handleClose();
+        }}
+      />
+    </BottomSheetModal>
   );
 };
 
 const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    justifyContent: 'flex-end',
-    backgroundColor: 'rgba(0, 0, 0, 0.65)',
-  },
-  backdrop: {
-    ...StyleSheet.absoluteFill,
-  },
-  sheet: {
-    backgroundColor: Colors.surfaceElevated,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    paddingHorizontal: 20,
-    paddingTop: 8,
-    height: '92%',
-    maxHeight: '94%',
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: -6 },
-    shadowOpacity: 0.35,
-    shadowRadius: 16,
-    elevation: 20,
-  },
-  handleContainer: {
-    alignItems: 'center',
-    paddingVertical: 10,
-    marginHorizontal: -20,
-    marginTop: -8,
-  },
-  handle: {
-    width: 44,
-    height: 5,
-    borderRadius: 2.5,
-    backgroundColor: Colors.border,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 10,
-  },
-  headerLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
   iconCircle: {
     width: 38,
     height: 38,
@@ -461,17 +321,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
-  },
-  title: {
-    fontSize: 15,
-    fontFamily: 'Inter_900Black',
-    letterSpacing: 0.8,
-    color: Colors.darkCarbon,
-  },
-  closeBtn: {
-    padding: 6,
-    borderRadius: 20,
-    backgroundColor: Colors.surface,
   },
   searchInputContainer: {
     marginBottom: 8,
@@ -514,6 +363,9 @@ const styles = StyleSheet.create({
   chipText: {
     fontFamily: 'Inter_600SemiBold',
     fontSize: 12,
+  },
+  flatList: {
+    flex: 1,
   },
   listContent: {
     gap: 8,
