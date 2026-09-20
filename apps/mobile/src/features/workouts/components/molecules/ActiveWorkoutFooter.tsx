@@ -8,17 +8,19 @@ export interface ActiveWorkoutFooterProps {
   submitting: boolean;
   onFinishWorkout: () => void;
   bottomPadding: number;
+  title?: string;
 }
 
 export const ActiveWorkoutFooter: React.FC<ActiveWorkoutFooterProps> = ({
   submitting,
   onFinishWorkout,
   bottomPadding,
+  title = 'FINISH WORKOUT',
 }) => {
   return (
     <View style={[styles.bottomBar, { paddingBottom: bottomPadding }]}>
       <Button
-        title="FINISH WORKOUT"
+        title={title}
         variant="primary"
         loading={submitting}
         icon={!submitting ? <Check size={18} color="#FFFFFF" /> : undefined}

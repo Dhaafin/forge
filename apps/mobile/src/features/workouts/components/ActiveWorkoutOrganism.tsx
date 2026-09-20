@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, ScrollView, Alert } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, StyleSheet, ScrollView } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter, useNavigation } from 'expo-router';
 import { Plus, Dumbbell, Trash2 } from 'lucide-react-native';
@@ -7,6 +7,7 @@ import { Plus, Dumbbell, Trash2 } from 'lucide-react-native';
 import { useActiveWorkout, WorkoutMode, ActiveSet } from '../hooks/useActiveWorkout';
 import { ExercisePickerBottomSheet } from './ExercisePickerBottomSheet';
 import { DeleteSessionBottomSheet } from './DeleteSessionBottomSheet';
+import { DiscardWorkoutBottomSheet } from './DiscardWorkoutBottomSheet';
 import { Typography, Button } from '@/components/ui';
 import { Colors } from '@/theme/colors';
 import {
@@ -35,6 +36,8 @@ export const ActiveWorkoutOrganism: React.FC<ActiveWorkoutOrganismProps> = ({
   const insets = useSafeAreaInsets();
   const [pickerVisible, setPickerVisible] = useState(false);
   const [deleteSheetVisible, setDeleteSheetVisible] = useState(false);
+  const [discardSheetVisible, setDiscardSheetVisible] = useState(false);
+  const pendingNavActionRef = useRef<any>(null);
 
   const handleExit = () => {
     if (onClose) {
@@ -80,26 +83,12 @@ export const ActiveWorkoutOrganism: React.FC<ActiveWorkoutOrganismProps> = ({
 
       // Prevent default behavior of leaving the screen
       e.preventDefault();
-
-      Alert.alert(
-        'Discard Workout?',
-        'Are you sure you want to exit? All recorded sets will be lost.',
-        [
-          { text: 'Keep Training', style: 'cancel' },
-          {
-            text: 'Discard',
-            style: 'destructive',
-            onPress: () => {
-              resetSession();
-              navigation.dispatch(e.data.action);
-            },
-          },
-        ]
-      );
+      pendingNavActionRef.current = e.data.action;
+      setDiscardSheetVisible(true);
     });
 
     return unsubscribe;
-  }, [navigation, hasRecordedWorkout, resetSession]);
+  }, [navigation, hasRecordedWorkout]);
 
   // Start or load session on mount
   useEffect(() => {
@@ -112,23 +101,21 @@ export const ActiveWorkoutOrganism: React.FC<ActiveWorkoutOrganismProps> = ({
 
   const handleDiscard = () => {
     if (exercises.length > 0) {
-      Alert.alert(
-        'Discard Workout?',
-        'Are you sure you want to exit? All recorded sets will be lost.',
-        [
-          { text: 'Keep Training', style: 'cancel' },
-          {
-            text: 'Discard',
-            style: 'destructive',
-            onPress: () => {
-              resetSession();
-              handleExit();
-            },
-          },
-        ]
-      );
+      setDiscardSheetVisible(true);
     } else {
       resetSession();
+      handleExit();
+    }
+  };
+
+  const handleConfirmDiscard = () => {
+    setDiscardSheetVisible(false);
+    resetSession();
+    if (pendingNavActionRef.current) {
+      const action = pendingNavActionRef.current;
+      pendingNavActionRef.current = null;
+      navigation.dispatch(action);
+    } else {
       handleExit();
     }
   };
@@ -225,6 +212,7 @@ export const ActiveWorkoutOrganism: React.FC<ActiveWorkoutOrganismProps> = ({
         submitting={submitting}
         onFinishWorkout={finishWorkout}
         bottomPadding={bottomPadding}
+        title={editingSessionId ? 'UPDATE WORKOUT' : 'FINISH WORKOUT'}
       />
 
       {/* Exercise Picker Modal */}
@@ -232,6 +220,16 @@ export const ActiveWorkoutOrganism: React.FC<ActiveWorkoutOrganismProps> = ({
         visible={pickerVisible}
         onClose={() => setPickerVisible(false)}
         onSelectExercise={(selected) => addExercise(selected)}
+      />
+
+      {/* Discard Workout Confirmation Sheet */}
+      <DiscardWorkoutBottomSheet
+        visible={discardSheetVisible}
+        onClose={() => {
+          setDiscardSheetVisible(false);
+          pendingNavActionRef.current = null;
+        }}
+        onConfirmDiscard={handleConfirmDiscard}
       />
 
       {/* Delete Workout Session Confirmation Sheet */}

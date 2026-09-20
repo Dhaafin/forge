@@ -91,7 +91,7 @@ export function BottomSheetModal({
   }, [visible, dragY, triggerHaptic]);
 
   useEffect(() => {
-    if (!visible) return;
+    if (!visible || Platform.OS !== 'android') return;
     const backAction = () => {
       onClose();
       return true;

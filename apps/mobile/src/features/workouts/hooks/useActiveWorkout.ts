@@ -194,13 +194,16 @@ export function useActiveWorkout(onSuccess?: () => void) {
 
       // Group returned sets by exercise
       const exMap = new Map<string, ActiveExercise>();
+      const cachedExercises = queryClient.getQueryData<any[]>(['exercises']);
+
       (session.sets || []).forEach((s: any) => {
         if (!exMap.has(s.exerciseId)) {
+          const matched = cachedExercises?.find((e: any) => e.id === s.exerciseId);
           exMap.set(s.exerciseId, {
             id: `${s.exerciseId}-${Date.now()}`,
             exerciseId: s.exerciseId,
-            name: s.exerciseName || 'Exercise',
-            targetMuscle: s.targetMuscle || s.muscleGroup || 'General',
+            name: s.exerciseName || matched?.name || 'Exercise',
+            targetMuscle: s.targetMuscle || s.muscleGroup || matched?.targetMuscle || 'General',
             sets: [],
           });
         }
