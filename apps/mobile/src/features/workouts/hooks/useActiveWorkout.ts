@@ -200,7 +200,7 @@ export function useActiveWorkout(onSuccess?: () => void) {
             id: `${s.exerciseId}-${Date.now()}`,
             exerciseId: s.exerciseId,
             name: s.exerciseName || 'Exercise',
-            targetMuscle: 'General',
+            targetMuscle: s.targetMuscle || s.muscleGroup || 'General',
             sets: [],
           });
         }

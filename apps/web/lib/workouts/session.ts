@@ -228,6 +228,7 @@ export async function getSessionById(sessionId: string) {
       sessionId: workoutSets.sessionId,
       exerciseId: workoutSets.exerciseId,
       exerciseName: exercises.name,
+      targetMuscle: exercises.targetMuscle,
       setNumber: workoutSets.setNumber,
       weightKg: workoutSets.weightKg,
       reps: workoutSets.reps,
