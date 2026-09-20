@@ -39,8 +39,12 @@ export const ActionBar: React.FC = () => {
   const router = useRouter();
   const insets = useSafeAreaInsets();
 
-  // Hide ActionBar on auth screens
-  if (pathname.includes('/login') || pathname.includes('(auth)')) {
+  // Hide ActionBar on auth and active fullscreen workout screens
+  if (
+    pathname.includes('/login') ||
+    pathname.includes('(auth)') ||
+    pathname.includes('/workout')
+  ) {
     return null;
   }
 

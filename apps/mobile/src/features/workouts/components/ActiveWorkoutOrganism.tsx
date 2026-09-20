@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, ScrollView, Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
+import { useRouter, useNavigation } from 'expo-router';
 import { Plus, Dumbbell } from 'lucide-react-native';
 
 import { useActiveWorkout, WorkoutMode, ActiveSet } from '../hooks/useActiveWorkout';
@@ -30,6 +30,7 @@ export const ActiveWorkoutOrganism: React.FC<ActiveWorkoutOrganismProps> = ({
   onSuccess,
 }) => {
   const router = useRouter();
+  const navigation = useNavigation();
   const insets = useSafeAreaInsets();
   const [pickerVisible, setPickerVisible] = useState(false);
 
@@ -64,6 +65,38 @@ export const ActiveWorkoutOrganism: React.FC<ActiveWorkoutOrganismProps> = ({
     handleExit();
   });
 
+  // Guard against accidental back button / gesture swipe exit during an active workout
+  const hasRecordedWorkout = exercises.length > 0 && !submitting;
+
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('beforeRemove' as any, (e: any) => {
+      if (!hasRecordedWorkout) {
+        return;
+      }
+
+      // Prevent default behavior of leaving the screen
+      e.preventDefault();
+
+      Alert.alert(
+        'Discard Workout?',
+        'Are you sure you want to exit? All recorded sets will be lost.',
+        [
+          { text: 'Keep Training', style: 'cancel' },
+          {
+            text: 'Discard',
+            style: 'destructive',
+            onPress: () => {
+              resetSession();
+              navigation.dispatch(e.data.action);
+            },
+          },
+        ]
+      );
+    });
+
+    return unsubscribe;
+  }, [navigation, hasRecordedWorkout, resetSession]);
+
   // Start or load session on mount
   useEffect(() => {
     if (sessionId) {
@@ -79,7 +112,7 @@ export const ActiveWorkoutOrganism: React.FC<ActiveWorkoutOrganismProps> = ({
         'Discard Workout?',
         'Are you sure you want to exit? All recorded sets will be lost.',
         [
-          { text: 'Cancel', style: 'cancel' },
+          { text: 'Keep Training', style: 'cancel' },
           {
             text: 'Discard',
             style: 'destructive',
