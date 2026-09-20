@@ -131,34 +131,48 @@ export const ExercisePickerBottomSheet: React.FC<ExercisePickerBottomSheetProps>
 
     return (
       <View style={styles.exerciseCard}>
-        <TouchableOpacity
-          style={styles.cardHeader}
-          activeOpacity={0.7}
-          onPress={() => toggleExpandExercise(item.id)}
-        >
-          <View style={styles.cardIconCircle}>
-            <Dumbbell size={16} color={Colors.racingRed} />
-          </View>
+        <View style={styles.cardHeader}>
+          <TouchableOpacity
+            style={styles.cardMainTouchable}
+            activeOpacity={0.7}
+            onPress={() => toggleExpandExercise(item.id)}
+          >
+            <View style={styles.cardIconCircle}>
+              <Dumbbell size={16} color={Colors.racingRed} />
+            </View>
 
-          <View style={styles.cardMainInfo}>
-            <Typography variant="h3" style={styles.exerciseName}>
-              {item.name}
-            </Typography>
-            <Typography variant="caption" color={Colors.textSecondary}>
-              {item.targetMuscle}
-            </Typography>
-          </View>
+            <View style={styles.cardMainInfo}>
+              <Typography variant="h3" style={styles.exerciseName}>
+                {item.name}
+              </Typography>
+              <Typography variant="caption" color={Colors.textSecondary}>
+                {item.targetMuscle}
+              </Typography>
+            </View>
 
-          <Badge label={item.targetMuscle} variant="dark" style={styles.badge} />
+            <Badge label={item.targetMuscle} variant="dark" style={styles.badge} />
 
-          <View style={styles.chevronBox}>
-            {isExpanded ? (
-              <ChevronUp size={18} color={Colors.racingRed} />
-            ) : (
-              <ChevronDown size={18} color={Colors.textSecondary} />
-            )}
-          </View>
-        </TouchableOpacity>
+            <View style={styles.chevronBox}>
+              {isExpanded ? (
+                <ChevronUp size={18} color={Colors.racingRed} />
+              ) : (
+                <ChevronDown size={18} color={Colors.textSecondary} />
+              )}
+            </View>
+          </TouchableOpacity>
+
+          {/* Direct 1-Tap Quick Add Button */}
+          <TouchableOpacity
+            style={styles.quickAddBtn}
+            activeOpacity={0.8}
+            onPress={() => {
+              onSelectExercise(item);
+              handleClose();
+            }}
+          >
+            <Plus size={16} color="#FFFFFF" />
+          </TouchableOpacity>
+        </View>
 
         {/* Accordion History Content */}
         {isExpanded && (
@@ -525,7 +539,22 @@ const styles = StyleSheet.create({
   cardHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+  },
+  cardMainTouchable: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  quickAddBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    backgroundColor: Colors.racingRed,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: 8,
   },
   cardIconCircle: {
     width: 32,
