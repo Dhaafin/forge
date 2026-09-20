@@ -1,5 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
+import Animated, {
+  FadeInRight,
+  FadeOutLeft,
+  FadeInLeft,
+  FadeOutRight,
+  LinearTransition,
+} from 'react-native-reanimated';
 import {
   Dumbbell,
   Edit3,
@@ -53,6 +60,7 @@ export const SessionActionHubBottomSheet: React.FC<SessionActionHubBottomSheetPr
 }) => {
   const { showSuccess, showError } = useFlashMessage();
   const [view, setView] = useState<HubView>('menu');
+  const [direction, setDirection] = useState<'forward' | 'backward'>('forward');
 
   // Form states
   const [title, setTitle] = useState('');
@@ -60,10 +68,21 @@ export const SessionActionHubBottomSheet: React.FC<SessionActionHubBottomSheetPr
   const [durationStr, setDurationStr] = useState('');
   const [loading, setLoading] = useState(false);
 
+  const goToView = (nextView: HubView) => {
+    setDirection('forward');
+    setView(nextView);
+  };
+
+  const goBackToMenu = () => {
+    setDirection('backward');
+    setView('menu');
+  };
+
   // Sync state when session or visibility changes
   useEffect(() => {
     if (visible && session) {
       setView('menu');
+      setDirection('forward');
       setTitle(session.title || '');
       setDateStr(session.startTime ? new Date(session.startTime).toISOString().split('T')[0] : '');
       setDurationStr(session.durationMinutes ? String(session.durationMinutes) : '');
@@ -138,7 +157,7 @@ export const SessionActionHubBottomSheet: React.FC<SessionActionHubBottomSheetPr
   // Back button for sub-views
   const renderBackHeader = () => (
     <TouchableOpacity
-      onPress={() => setView('menu')}
+      onPress={goBackToMenu}
       style={styles.backButton}
       activeOpacity={0.7}
       hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
@@ -180,7 +199,13 @@ export const SessionActionHubBottomSheet: React.FC<SessionActionHubBottomSheetPr
       }
     >
       {view === 'menu' && (
-        <View style={styles.menuContainer}>
+        <Animated.View
+          key="menu"
+          entering={direction === 'backward' ? FadeInLeft.duration(220).springify().damping(18) : undefined}
+          exiting={FadeOutLeft.duration(160)}
+          layout={LinearTransition.springify().damping(20).stiffness(220)}
+          style={styles.menuContainer}
+        >
           {/* Option 1: Edit Exercises & Sets */}
           <TouchableOpacity
             style={styles.optionCard}
@@ -210,7 +235,7 @@ export const SessionActionHubBottomSheet: React.FC<SessionActionHubBottomSheetPr
           <TouchableOpacity
             style={styles.optionCard}
             activeOpacity={0.8}
-            onPress={() => setView('rename')}
+            onPress={() => goToView('rename')}
           >
             <View style={[styles.optionIconCircle, { backgroundColor: '#EFF6FF', borderColor: '#93C5FD' }]}>
               <Edit3 size={20} color={Colors.motorsportBlue} />
@@ -232,7 +257,7 @@ export const SessionActionHubBottomSheet: React.FC<SessionActionHubBottomSheetPr
           <TouchableOpacity
             style={styles.optionCard}
             activeOpacity={0.8}
-            onPress={() => setView('timing')}
+            onPress={() => goToView('timing')}
           >
             <View style={[styles.optionIconCircle, { backgroundColor: '#F0FDF4', borderColor: '#86EFAC' }]}>
               <Calendar size={20} color="#16A34A" />
@@ -254,18 +279,24 @@ export const SessionActionHubBottomSheet: React.FC<SessionActionHubBottomSheetPr
           <TouchableOpacity
             style={styles.dangerRow}
             activeOpacity={0.8}
-            onPress={() => setView('delete')}
+            onPress={() => goToView('delete')}
           >
             <Trash2 size={16} color={Colors.error} style={{ marginRight: 8 }} />
             <Typography variant="label" color={Colors.error}>
               Delete Workout Session
             </Typography>
           </TouchableOpacity>
-        </View>
+        </Animated.View>
       )}
 
       {view === 'rename' && (
-        <View style={styles.formContainer}>
+        <Animated.View
+          key="rename"
+          entering={FadeInRight.duration(220).springify().damping(18)}
+          exiting={FadeOutRight.duration(160)}
+          layout={LinearTransition.springify().damping(20).stiffness(220)}
+          style={styles.formContainer}
+        >
           <Input
             label="SESSION TITLE"
             value={title}
@@ -286,15 +317,21 @@ export const SessionActionHubBottomSheet: React.FC<SessionActionHubBottomSheetPr
               title="Cancel"
               variant="outline"
               disabled={loading}
-              onPress={() => setView('menu')}
+              onPress={goBackToMenu}
               style={styles.cancelButton}
             />
           </View>
-        </View>
+        </Animated.View>
       )}
 
       {view === 'timing' && (
-        <View style={styles.formContainer}>
+        <Animated.View
+          key="timing"
+          entering={FadeInRight.duration(220).springify().damping(18)}
+          exiting={FadeOutRight.duration(160)}
+          layout={LinearTransition.springify().damping(20).stiffness(220)}
+          style={styles.formContainer}
+        >
           <Input
             label="DATE (YYYY-MM-DD)"
             value={dateStr}
@@ -325,15 +362,21 @@ export const SessionActionHubBottomSheet: React.FC<SessionActionHubBottomSheetPr
               title="Cancel"
               variant="outline"
               disabled={loading}
-              onPress={() => setView('menu')}
+              onPress={goBackToMenu}
               style={styles.cancelButton}
             />
           </View>
-        </View>
+        </Animated.View>
       )}
 
       {view === 'delete' && (
-        <View style={styles.deleteContainer}>
+        <Animated.View
+          key="delete"
+          entering={FadeInRight.duration(220).springify().damping(18)}
+          exiting={FadeOutRight.duration(160)}
+          layout={LinearTransition.springify().damping(20).stiffness(220)}
+          style={styles.deleteContainer}
+        >
           <View style={styles.warningBox}>
             <AlertTriangle size={24} color={Colors.error} style={{ marginRight: 12 }} />
             <Typography variant="body" color={Colors.textPrimary} style={styles.warningText}>
@@ -353,11 +396,11 @@ export const SessionActionHubBottomSheet: React.FC<SessionActionHubBottomSheetPr
               title="Cancel"
               variant="outline"
               disabled={loading}
-              onPress={() => setView('menu')}
+              onPress={goBackToMenu}
               style={styles.cancelButton}
             />
           </View>
-        </View>
+        </Animated.View>
       )}
     </BottomSheetModal>
   );

@@ -16,6 +16,7 @@ import Animated, {
   FadeOut,
   SlideInDown,
   SlideOutDown,
+  LinearTransition,
   useSharedValue,
   useAnimatedStyle,
   withSpring,
@@ -163,6 +164,7 @@ export function BottomSheetModal({
           <Animated.View
             entering={SlideInDown.duration(250)}
             exiting={SlideOutDown.duration(200)}
+            layout={LinearTransition.springify().damping(20).stiffness(220)}
             style={[
               styles.sheetContainer,
               { paddingBottom: dynamicBottomPadding },
