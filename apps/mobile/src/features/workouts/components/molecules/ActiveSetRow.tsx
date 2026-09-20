@@ -118,65 +118,66 @@ export const ActiveSetRow: React.FC<ActiveSetRowProps> = ({
       layout={LinearTransition.springify()}
       entering={FadeInDown.duration(200)}
       exiting={FadeOutUp.duration(150)}
-      style={[styles.setRow, setRow.completed && styles.completedSetRow]}
     >
-      {/* Set Number Badge */}
-      <View style={styles.setNumberBadge}>
-        <Typography variant="label" style={styles.setNumberText}>
-          {setRow.setNumber}
-        </Typography>
+      <View style={[styles.setRow, setRow.completed && styles.completedSetRow]}>
+        {/* Set Number Badge */}
+        <View style={styles.setNumberBadge}>
+          <Typography variant="label" style={styles.setNumberText}>
+            {setRow.setNumber}
+          </Typography>
+        </View>
+
+        {/* Set Type Pill Toggle (N/W/D/F) */}
+        <TouchableOpacity
+          style={styles.setTypeBtn}
+          activeOpacity={0.8}
+          onPress={() => onCycleSetType(exerciseId, setRow.id, setRow.setType)}
+        >
+          <Badge label={setTypeObj.label} variant={setTypeObj.badgeVariant} />
+        </TouchableOpacity>
+
+        {/* Flexible Weight Input */}
+        <View style={styles.inputBox}>
+          <TextInput
+            style={styles.numInput}
+            keyboardType="decimal-pad"
+            value={weightText}
+            onChangeText={handleWeightChange}
+            onBlur={handleWeightBlur}
+            placeholder="0"
+            placeholderTextColor={Colors.textMuted}
+          />
+        </View>
+
+        {/* Flexible Reps Input */}
+        <View style={styles.inputBox}>
+          <TextInput
+            style={styles.numInput}
+            keyboardType="number-pad"
+            value={repsText}
+            onChangeText={handleRepsChange}
+            onBlur={handleRepsBlur}
+            placeholder="0"
+            placeholderTextColor={Colors.textMuted}
+          />
+        </View>
+
+        {/* Complete Checkbox Toggle */}
+        <TouchableOpacity
+          style={[styles.checkBtn, setRow.completed && styles.checkedBtn]}
+          onPress={() => onToggleComplete(exerciseId, setRow.id)}
+        >
+          <Check size={14} color={setRow.completed ? '#FFFFFF' : Colors.textMuted} />
+        </TouchableOpacity>
+
+        {/* Delete Set Row */}
+        <TouchableOpacity
+          style={styles.deleteSetBtn}
+          onPress={() => onRemoveSet(exerciseId, setRow.id)}
+        >
+          <Trash2 size={14} color={Colors.textMuted} />
+        </TouchableOpacity>
       </View>
-
-      {/* Set Type Pill Toggle (N/W/D/F) */}
-      <TouchableOpacity
-        style={styles.setTypeBtn}
-        activeOpacity={0.8}
-        onPress={() => onCycleSetType(exerciseId, setRow.id, setRow.setType)}
-      >
-        <Badge label={setTypeObj.label} variant={setTypeObj.badgeVariant} />
-      </TouchableOpacity>
-
-      {/* Flexible Weight Input */}
-      <View style={styles.inputBox}>
-        <TextInput
-          style={styles.numInput}
-          keyboardType="decimal-pad"
-          value={weightText}
-          onChangeText={handleWeightChange}
-          onBlur={handleWeightBlur}
-          placeholder="0"
-          placeholderTextColor={Colors.textMuted}
-        />
-      </View>
-
-      {/* Flexible Reps Input */}
-      <View style={styles.inputBox}>
-        <TextInput
-          style={styles.numInput}
-          keyboardType="number-pad"
-          value={repsText}
-          onChangeText={handleRepsChange}
-          onBlur={handleRepsBlur}
-          placeholder="0"
-          placeholderTextColor={Colors.textMuted}
-        />
-      </View>
-
-      {/* Complete Checkbox Toggle */}
-      <TouchableOpacity
-        style={[styles.checkBtn, setRow.completed && styles.checkedBtn]}
-        onPress={() => onToggleComplete(exerciseId, setRow.id)}
-      >
-        <Check size={14} color={setRow.completed ? '#FFFFFF' : Colors.textMuted} />
-      </TouchableOpacity>
-
-      {/* Delete Set Row */}
-      <TouchableOpacity
-        style={styles.deleteSetBtn}
-        onPress={() => onRemoveSet(exerciseId, setRow.id)}
-      >
-        <Trash2 size={14} color={Colors.textMuted} />
-      </TouchableOpacity>
     </Animated.View>
   );
 };
