@@ -306,7 +306,7 @@ const styles = StyleSheet.create({
   listContent: {
     paddingHorizontal: 20,
     paddingTop: 4,
-    paddingBottom: 84,
+    paddingBottom: 110,
     gap: 10,
   },
   skeletonList: {
@@ -415,8 +415,8 @@ const styles = StyleSheet.create({
   },
   fab: {
     position: 'absolute',
-    right: 16,
-    bottom: 16,
+    right: 20,
+    bottom: 20,
     width: 52,
     height: 52,
     borderRadius: 26,
