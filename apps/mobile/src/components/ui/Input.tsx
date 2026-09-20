@@ -6,6 +6,7 @@ import {
   TextInputProps,
   TouchableOpacity,
   ViewStyle,
+  Platform,
 } from 'react-native';
 import { Eye, EyeOff } from 'lucide-react-native';
 import { Typography } from './Typography';
@@ -119,6 +120,11 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: Colors.textPrimary,
     paddingVertical: 0,
+    ...Platform.select({
+      web: {
+        outlineStyle: 'none',
+      } as any,
+    }),
   },
   leftIconContainer: {
     marginRight: 10,

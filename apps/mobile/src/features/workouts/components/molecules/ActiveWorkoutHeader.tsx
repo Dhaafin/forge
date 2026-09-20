@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, StyleSheet, TouchableOpacity, TextInput } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, TextInput, Platform } from 'react-native';
 import { ArrowLeft } from 'lucide-react-native';
 import { Typography, Badge } from '@/components/ui';
 import { Colors } from '@/theme/colors';
@@ -77,6 +77,11 @@ const styles = StyleSheet.create({
     fontFamily: 'Poppins_600SemiBold',
     color: Colors.darkCarbon,
     paddingVertical: 2,
+    ...Platform.select({
+      web: {
+        outlineStyle: 'none',
+      } as any,
+    }),
   },
   badgeWrapper: {
     flexDirection: 'row',

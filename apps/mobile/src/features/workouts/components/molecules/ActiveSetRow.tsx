@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, TouchableOpacity, TextInput } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, TextInput, Platform } from 'react-native';
 import Animated, { FadeInDown, FadeOutUp, LinearTransition } from 'react-native-reanimated';
 import { Check, Trash2 } from 'lucide-react-native';
 import { Typography, Badge } from '@/components/ui';
@@ -232,6 +232,11 @@ const styles = StyleSheet.create({
     paddingVertical: 0,
     includeFontPadding: false,
     textAlignVertical: 'center',
+    ...Platform.select({
+      web: {
+        outlineStyle: 'none',
+      } as any,
+    }),
   },
   checkBtn: {
     width: 32,
