@@ -22,6 +22,7 @@ import {
 
 import { useWorkoutHistory } from '../hooks/useWorkoutHistory';
 import { WorkoutSessionItem } from '../services/history.service';
+import { SessionActionHubBottomSheet } from './SessionActionHubBottomSheet';
 import { RecordModeBottomSheet } from '@/features/workouts/components/RecordModeBottomSheet';
 import { WorkoutMode } from '@/features/workouts/hooks/useActiveWorkout';
 import { Typography, Input, Badge, ScreenHeader, Skeleton } from '@/components/ui';
@@ -54,6 +55,7 @@ export const HistoryOrganism: React.FC = () => {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const [recordSheetVisible, setRecordSheetVisible] = useState(false);
+  const [selectedSession, setSelectedSession] = useState<WorkoutSessionItem | null>(null);
 
   const {
     sessions,
@@ -82,10 +84,6 @@ export const HistoryOrganism: React.FC = () => {
     router.push({ pathname: '/workout', params: { mode } });
   };
 
-  const handleEditSession = (sessionId: string) => {
-    router.push({ pathname: '/workout', params: { sessionId, mode: 'past' } });
-  };
-
   const renderSessionItem = ({ item, index }: { item: WorkoutSessionItem; index: number }) => (
     <Animated.View
       entering={FadeInDown.delay(Math.min(index * 35, 350)).duration(350)}
@@ -93,7 +91,7 @@ export const HistoryOrganism: React.FC = () => {
     >
       <TouchableOpacity
         activeOpacity={0.8}
-        onPress={() => handleEditSession(item.id)}
+        onPress={() => setSelectedSession(item)}
         style={styles.cardTouchable}
       >
         {/* Left Edge Motorsport Accent Stripe */}
@@ -297,6 +295,22 @@ export const HistoryOrganism: React.FC = () => {
         visible={recordSheetVisible}
         onClose={() => setRecordSheetVisible(false)}
         onSelectMode={handleStartMode}
+      />
+
+      {/* Session Action Hub Sheet */}
+      <SessionActionHubBottomSheet
+        visible={Boolean(selectedSession)}
+        session={selectedSession}
+        onClose={() => setSelectedSession(null)}
+        onEditSets={(sessionId) => {
+          router.push({ pathname: '/workout', params: { sessionId, mode: 'past' } });
+        }}
+        onSessionUpdated={() => {
+          refetch();
+        }}
+        onSessionDeleted={() => {
+          refetch();
+        }}
       />
     </View>
   );
