@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, TouchableOpacity, TextInput } from 'react-native';
 import Animated, { FadeInDown, FadeOutUp, LinearTransition } from 'react-native-reanimated';
 import { Check, Trash2 } from 'lucide-react-native';
@@ -36,6 +36,83 @@ export const ActiveSetRow: React.FC<ActiveSetRowProps> = ({
 }) => {
   const setTypeObj = SET_TYPES.find((t) => t.type === setRow.setType) || SET_TYPES[0];
 
+  // Local string buffers to prevent trailing decimal erasure and cursor jumping
+  const [weightText, setWeightText] = useState(
+    setRow.weightKg !== undefined && setRow.weightKg !== null && setRow.weightKg > 0
+      ? String(setRow.weightKg)
+      : ''
+  );
+
+  const [repsText, setRepsText] = useState(
+    setRow.reps !== undefined && setRow.reps !== null && setRow.reps > 0
+      ? String(setRow.reps)
+      : ''
+  );
+
+  // Sync state if setRow values change externally (e.g. session load / reset)
+  useEffect(() => {
+    const currentNum = parseFloat(weightText.replace(',', '.')) || 0;
+    if (setRow.weightKg !== currentNum) {
+      setWeightText(setRow.weightKg > 0 ? String(setRow.weightKg) : '');
+    }
+  }, [setRow.weightKg]);
+
+  useEffect(() => {
+    const currentNum = parseInt(repsText, 10) || 0;
+    if (setRow.reps !== currentNum) {
+      setRepsText(setRow.reps > 0 ? String(setRow.reps) : '');
+    }
+  }, [setRow.reps]);
+
+  const handleWeightChange = (val: string) => {
+    // 1. Normalize comma separator (common on Indonesian/European Android keyboards)
+    const normalized = val.replace(',', '.');
+
+    // 2. Allow empty, whole numbers, or decimal numbers with up to 2 decimal places
+    if (/^\d*\.?\d{0,2}$/.test(normalized)) {
+      setWeightText(normalized);
+      const parsed = parseFloat(normalized);
+      onUpdateSet(exerciseId, setRow.id, {
+        weightKg: isNaN(parsed) ? 0 : parsed,
+      });
+    }
+  };
+
+  const handleWeightBlur = () => {
+    if (weightText === '.' || weightText === '') {
+      setWeightText('');
+      onUpdateSet(exerciseId, setRow.id, { weightKg: 0 });
+    } else {
+      const parsed = parseFloat(weightText);
+      if (!isNaN(parsed)) {
+        setWeightText(String(parsed));
+      }
+    }
+  };
+
+  const handleRepsChange = (val: string) => {
+    // Allow only integer digits
+    if (/^\d*$/.test(val)) {
+      setRepsText(val);
+      const parsed = parseInt(val, 10);
+      onUpdateSet(exerciseId, setRow.id, {
+        reps: isNaN(parsed) ? 0 : parsed,
+      });
+    }
+  };
+
+  const handleRepsBlur = () => {
+    if (repsText === '') {
+      setRepsText('');
+      onUpdateSet(exerciseId, setRow.id, { reps: 0 });
+    } else {
+      const parsed = parseInt(repsText, 10);
+      if (!isNaN(parsed)) {
+        setRepsText(String(parsed));
+      }
+    }
+  };
+
   return (
     <Animated.View
       layout={LinearTransition.springify()}
@@ -64,10 +141,9 @@ export const ActiveSetRow: React.FC<ActiveSetRowProps> = ({
         <TextInput
           style={styles.numInput}
           keyboardType="decimal-pad"
-          value={setRow.weightKg ? setRow.weightKg.toString() : ''}
-          onChangeText={(val) =>
-            onUpdateSet(exerciseId, setRow.id, { weightKg: parseFloat(val) || 0 })
-          }
+          value={weightText}
+          onChangeText={handleWeightChange}
+          onBlur={handleWeightBlur}
           placeholder="0"
           placeholderTextColor={Colors.textMuted}
         />
@@ -78,10 +154,9 @@ export const ActiveSetRow: React.FC<ActiveSetRowProps> = ({
         <TextInput
           style={styles.numInput}
           keyboardType="number-pad"
-          value={setRow.reps ? setRow.reps.toString() : ''}
-          onChangeText={(val) =>
-            onUpdateSet(exerciseId, setRow.id, { reps: parseInt(val, 10) || 0 })
-          }
+          value={repsText}
+          onChangeText={handleRepsChange}
+          onBlur={handleRepsBlur}
           placeholder="0"
           placeholderTextColor={Colors.textMuted}
         />
