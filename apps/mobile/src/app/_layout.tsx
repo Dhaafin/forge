@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
-import { View, StyleSheet } from 'react-native';
+import { StyleSheet } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import {
@@ -48,7 +49,7 @@ export default function RootLayout() {
     <OfflineQueryProvider>
       <AuthProvider>
         <FlashMessageProvider>
-          <View style={styles.container}>
+          <GestureHandlerRootView style={styles.container}>
             <Stack
               screenOptions={{
                 headerShown: false,
@@ -61,7 +62,7 @@ export default function RootLayout() {
               <Stack.Screen name="session" options={{ headerShown: false }} />
             </Stack>
             <ActionBar />
-          </View>
+          </GestureHandlerRootView>
         </FlashMessageProvider>
       </AuthProvider>
     </OfflineQueryProvider>

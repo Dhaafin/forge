@@ -8,12 +8,19 @@ import {
   Platform,
   ViewStyle,
   StyleProp,
+  BackHandler,
 } from 'react-native';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
   FadeIn,
   FadeOut,
   SlideInDown,
   SlideOutDown,
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+  withTiming,
+  runOnJS,
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { X } from 'lucide-react-native';
@@ -31,6 +38,7 @@ export interface BottomSheetModalProps {
   containerStyle?: StyleProp<ViewStyle>;
   contentStyle?: StyleProp<ViewStyle>;
   heightPercent?: number | string;
+  enableDragToDismiss?: boolean;
 }
 
 export function BottomSheetModal({
@@ -44,13 +52,16 @@ export function BottomSheetModal({
   containerStyle,
   contentStyle,
   heightPercent,
+  enableDragToDismiss = true,
 }: BottomSheetModalProps) {
   const insets = useSafeAreaInsets();
   const dynamicBottomPadding = Math.max(insets.bottom + 12, 20);
   const [modalVisible, setModalVisible] = useState(visible);
+  const dragY = useSharedValue(0);
 
   useEffect(() => {
     if (visible) {
+      dragY.value = 0;
       setModalVisible(true);
     } else {
       const timer = setTimeout(() => {
@@ -58,7 +69,41 @@ export function BottomSheetModal({
       }, 220);
       return () => clearTimeout(timer);
     }
-  }, [visible]);
+  }, [visible, dragY]);
+
+  useEffect(() => {
+    if (!visible) return;
+    const backAction = () => {
+      onClose();
+      return true;
+    };
+    const backHandler = BackHandler.addEventListener(
+      'hardwareBackPress',
+      backAction
+    );
+    return () => backHandler.remove();
+  }, [visible, onClose]);
+
+  const panGesture = Gesture.Pan()
+    .enabled(enableDragToDismiss)
+    .onUpdate((event) => {
+      if (event.translationY > 0) {
+        dragY.value = event.translationY;
+      }
+    })
+    .onEnd((event) => {
+      if (event.translationY > 120 || event.velocityY > 600) {
+        dragY.value = withTiming(600, { duration: 180 }, () => {
+          runOnJS(onClose)();
+        });
+      } else {
+        dragY.value = withSpring(0, { damping: 20, stiffness: 250 });
+      }
+    });
+
+  const dragAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: dragY.value }],
+  }));
 
   if (!modalVisible && !visible) return null;
 
@@ -95,10 +140,15 @@ export function BottomSheetModal({
               styles.sheetContainer,
               { paddingBottom: dynamicBottomPadding },
               heightPercent ? { height: heightPercent as any } : null,
+              dragAnimatedStyle,
               containerStyle,
             ]}
           >
-            <View style={styles.handleBar} />
+            <GestureDetector gesture={panGesture}>
+              <View style={styles.handleContainer}>
+                <View style={styles.handleBar} />
+              </View>
+            </GestureDetector>
 
             {(title || headerLeft || headerRight) && (
               <View style={styles.header}>
@@ -163,13 +213,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 12,
   },
+  handleContainer: {
+    width: '100%',
+    alignItems: 'center',
+    paddingVertical: 10,
+    marginTop: -8,
+    marginBottom: 6,
+  },
   handleBar: {
-    width: 36,
-    height: 4,
-    borderRadius: 2,
+    width: 38,
+    height: 4.5,
+    borderRadius: 2.25,
     backgroundColor: Colors.border,
-    alignSelf: 'center',
-    marginBottom: 14,
   },
   header: {
     flexDirection: 'row',
