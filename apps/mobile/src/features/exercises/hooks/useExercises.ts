@@ -1,28 +1,14 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { exercisesService, ExerciseItem } from '../services/exercises.service';
 
-const DEFAULT_LIMIT = 50;
+const DEFAULT_LIMIT = 100;
 
 export function useExercises() {
-  const [exercises, setExercises] = useState<ExerciseItem[]>([]);
+  const [rawExercises, setRawExercises] = useState<ExerciseItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
-  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [selectedMuscle, setSelectedMuscle] = useState<string | null>(null);
-  const [meta, setMeta] = useState<{ total: number; hasMore: boolean }>({
-    total: 0,
-    hasMore: false,
-  });
-
-  // Debounce search value by 350ms
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearch(search);
-    }, 350);
-
-    return () => clearTimeout(timer);
-  }, [search]);
 
   const loadExercises = useCallback(async () => {
     setLoading(true);
@@ -31,27 +17,47 @@ export function useExercises() {
       const res = await exercisesService.getExercises({
         limit: DEFAULT_LIMIT,
         offset: 0,
-        search: debouncedSearch.trim() || undefined,
-        targetMuscle: selectedMuscle || undefined,
       });
 
-      setExercises(res.data || []);
-      setMeta({
-        total: res.meta.total,
-        hasMore: res.meta.hasMore,
-      });
+      setRawExercises(res.data || []);
     } catch (err: any) {
       console.error('Error fetching exercises:', err);
       setError(err?.message || 'Failed to load exercises');
     } finally {
       setLoading(false);
     }
-  }, [debouncedSearch, selectedMuscle]);
+  }, []);
 
-  // Fetch when debouncedSearch or muscle filter changes
+  // Fetch once on mount
   useEffect(() => {
     loadExercises();
   }, [loadExercises]);
+
+  // Instant client-side filtering (zero latency, zero skeleton flicker)
+  const exercises = useMemo(() => {
+    let result = rawExercises;
+    if (selectedMuscle) {
+      const target = selectedMuscle.toLowerCase();
+      result = result.filter(
+        (item) => item.targetMuscle && item.targetMuscle.toLowerCase() === target
+      );
+    }
+    if (search.trim()) {
+      const q = search.trim().toLowerCase();
+      result = result.filter(
+        (item) => item.name && item.name.toLowerCase().includes(q)
+      );
+    }
+    return result;
+  }, [rawExercises, selectedMuscle, search]);
+
+  const meta = useMemo(
+    () => ({
+      total: exercises.length,
+      hasMore: false,
+    }),
+    [exercises.length]
+  );
 
   return {
     exercises,

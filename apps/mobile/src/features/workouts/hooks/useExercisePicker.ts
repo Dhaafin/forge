@@ -1,82 +1,63 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { exercisesService, ExerciseItem } from '@/features/exercises/services/exercises.service';
 import { workoutsService, ExerciseHistoryDetails } from '../services/workouts.service';
 
-const PAGE_SIZE = 15;
+const PAGE_SIZE = 100;
 
 export function useExercisePicker(visible: boolean) {
-  const [exercises, setExercises] = useState<ExerciseItem[]>([]);
+  const [rawExercises, setRawExercises] = useState<ExerciseItem[]>([]);
   const [loading, setLoading] = useState(false);
-  const [loadingMore, setLoadingMore] = useState(false);
   const [search, setSearch] = useState('');
-  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [selectedMuscle, setSelectedMuscle] = useState<string | null>(null);
-  const [offset, setOffset] = useState(0);
-  const [hasMore, setHasMore] = useState(true);
 
   // Accordion History State
   const [expandedExerciseId, setExpandedExerciseId] = useState<string | null>(null);
   const [historyMap, setHistoryMap] = useState<Record<string, ExerciseHistoryDetails>>({});
   const [loadingHistoryMap, setLoadingHistoryMap] = useState<Record<string, boolean>>({});
 
-  // Debounce search input by 350ms
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearch(search);
-    }, 350);
-
-    return () => clearTimeout(timer);
-  }, [search]);
-
-  const fetchExercises = useCallback(async (currentOffset: number, isNewSearch = false) => {
-    if (isNewSearch) {
-      setLoading(true);
-    } else {
-      setLoadingMore(true);
-    }
-
+  const fetchExercises = useCallback(async () => {
+    setLoading(true);
     try {
       const res = await exercisesService.getExercises({
         limit: PAGE_SIZE,
-        offset: currentOffset,
-        search: debouncedSearch.trim() || undefined,
-        targetMuscle: selectedMuscle || undefined,
+        offset: 0,
       });
-
-      const newItems = res.data || [];
-      if (isNewSearch) {
-        setExercises(newItems);
-      } else {
-        setExercises((prev) => {
-          const existingIds = new Set(prev.map((item) => item.id));
-          const uniqueNew = newItems.filter((item) => !existingIds.has(item.id));
-          return [...prev, ...uniqueNew];
-        });
-      }
-
-      setHasMore(res.meta ? res.meta.hasMore : newItems.length >= PAGE_SIZE);
-      setOffset(currentOffset + newItems.length);
+      setRawExercises(res.data || []);
     } catch (err) {
       console.error('Error fetching exercise picker list:', err);
     } finally {
       setLoading(false);
-      setLoadingMore(false);
     }
-  }, [debouncedSearch, selectedMuscle]);
+  }, []);
 
-  // Initial fetch on visible or search/filter change
+  // Fetch when modal becomes visible if not yet loaded
   useEffect(() => {
-    if (visible) {
-      setOffset(0);
-      fetchExercises(0, true);
+    if (visible && rawExercises.length === 0) {
+      fetchExercises();
     }
-  }, [visible, debouncedSearch, selectedMuscle, fetchExercises]);
+  }, [visible, rawExercises.length, fetchExercises]);
+
+  // Instant in-memory filtering (zero latency, zero skeleton flicker)
+  const exercises = useMemo(() => {
+    let result = rawExercises;
+    if (selectedMuscle) {
+      const target = selectedMuscle.toLowerCase();
+      result = result.filter(
+        (item) => item.targetMuscle && item.targetMuscle.toLowerCase() === target
+      );
+    }
+    if (search.trim()) {
+      const q = search.trim().toLowerCase();
+      result = result.filter(
+        (item) => item.name && item.name.toLowerCase().includes(q)
+      );
+    }
+    return result;
+  }, [rawExercises, selectedMuscle, search]);
 
   const loadMore = useCallback(() => {
-    if (!loading && !loadingMore && hasMore) {
-      fetchExercises(offset, false);
-    }
-  }, [loading, loadingMore, hasMore, offset, fetchExercises]);
+    // Entire list fetched
+  }, []);
 
   // Toggle Accordion & Fetch History if not cached
   const toggleExpandExercise = useCallback(async (exerciseId: string) => {
@@ -104,8 +85,8 @@ export function useExercisePicker(visible: boolean) {
   return {
     exercises,
     loading,
-    loadingMore,
-    hasMore,
+    loadingMore: false,
+    hasMore: false,
     search,
     setSearch,
     selectedMuscle,
@@ -115,6 +96,6 @@ export function useExercisePicker(visible: boolean) {
     historyMap,
     loadingHistoryMap,
     toggleExpandExercise,
-    refetch: () => fetchExercises(0, true),
+    refetch: fetchExercises,
   };
 }
