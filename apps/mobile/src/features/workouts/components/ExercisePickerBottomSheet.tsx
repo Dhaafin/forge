@@ -167,21 +167,21 @@ export const ExercisePickerBottomSheet: React.FC<ExercisePickerBottomSheetProps>
               <View style={styles.centerPadding}>
                 <Skeleton width="80%" height={24} borderRadius={8} />
               </View>
-            ) : historyData && (historyData.all_time_max_weight > 0 || historyData.history.length > 0) ? (
+            ) : historyData && (historyData.allTimeMaxWeight > 0 || historyData.history.length > 0) ? (
               <View style={styles.historyContent}>
                 {/* All-time Stats Summary Bar */}
                 <View style={styles.statsRow}>
                   <View style={styles.statPill}>
                     <Trophy size={14} color={Colors.racingRed} style={{ marginRight: 6 }} />
                     <Typography variant="caption" color={Colors.textSecondary}>
-                      Max: <Typography variant="label" color={Colors.darkCarbon}>{historyData.all_time_max_weight} kg</Typography>
+                      Max: <Typography variant="label" color={Colors.darkCarbon}>{historyData.allTimeMaxWeight} kg</Typography>
                     </Typography>
                   </View>
 
                   <View style={styles.statPill}>
                     <Zap size={14} color={Colors.electricCyan} style={{ marginRight: 6 }} />
                     <Typography variant="caption" color={Colors.textSecondary}>
-                      Est 1RM: <Typography variant="label" color={Colors.darkCarbon}>{historyData.estimated_1rm} kg</Typography>
+                      Est 1RM: <Typography variant="label" color={Colors.darkCarbon}>{historyData.estimatedOneRm} kg</Typography>
                     </Typography>
                   </View>
                 </View>
@@ -192,13 +192,13 @@ export const ExercisePickerBottomSheet: React.FC<ExercisePickerBottomSheetProps>
                 </Typography>
 
                 {historyData.history.slice(0, 3).map((log, idx) => (
-                  <View key={log.session_id || idx} style={styles.historyLogRow}>
+                  <View key={log.sessionId || idx} style={styles.historyLogRow}>
                     <Typography variant="caption" color={Colors.textSecondary} style={{ width: 80 }}>
                       {new Date(log.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                     </Typography>
 
                     <Typography variant="caption" color={Colors.darkCarbon} style={{ flex: 1 }}>
-                      {log.sets.map((s) => `${s.weight_kg}kg × ${s.reps}`).join(' • ')}
+                      {log.sets.map((s) => `${s.weightKg}kg × ${s.reps}`).join(' • ')}
                     </Typography>
                   </View>
                 ))}

@@ -21,30 +21,30 @@ export interface CreateWorkoutSessionPayload {
 
 export interface ExerciseHistorySetLog {
   id: string;
-  set_number: number;
-  weight_kg: number;
+  setNumber: number;
+  weightKg: number;
   reps: number;
-  set_type: string;
-  is_pr: boolean;
+  setType: string;
+  isPr: boolean;
 }
 
 export interface ExerciseSessionHistoryLog {
-  session_id: string;
-  session_title: string;
+  sessionId: string;
+  sessionTitle: string;
   date: string;
   sets: ExerciseHistorySetLog[];
-  session_volume: number;
-  session_max_weight: number;
-  session_estimated_1rm: number;
+  sessionVolume: number;
+  sessionMaxWeight: number;
+  sessionEstimated1Rm: number;
 }
 
 export interface ExerciseHistoryDetails {
-  exercise_id: string;
-  exercise_name: string;
-  target_muscle: string;
-  all_time_max_weight: number;
-  all_time_max_volume: number;
-  estimated_1rm: number;
+  exerciseId: string;
+  exerciseName: string;
+  targetMuscle: string;
+  allTimeMaxWeight: number;
+  allTimeMaxVolume: number;
+  estimatedOneRm: number;
   history: ExerciseSessionHistoryLog[];
 }
 
