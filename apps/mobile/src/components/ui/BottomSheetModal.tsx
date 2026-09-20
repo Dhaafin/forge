@@ -164,7 +164,7 @@ export function BottomSheetModal({
           <Animated.View
             entering={SlideInDown.duration(250)}
             exiting={SlideOutDown.duration(200)}
-            layout={LinearTransition.springify().damping(20).stiffness(220)}
+            layout={LinearTransition.duration(200)}
             style={[
               styles.sheetContainer,
               { paddingBottom: dynamicBottomPadding },

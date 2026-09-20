@@ -201,9 +201,9 @@ export const SessionActionHubBottomSheet: React.FC<SessionActionHubBottomSheetPr
       {view === 'menu' && (
         <Animated.View
           key="menu"
-          entering={direction === 'backward' ? FadeInLeft.duration(220).springify().damping(18) : undefined}
-          exiting={FadeOutLeft.duration(160)}
-          layout={LinearTransition.springify().damping(20).stiffness(220)}
+          entering={direction === 'backward' ? FadeInLeft.duration(180) : undefined}
+          exiting={FadeOutLeft.duration(140)}
+          layout={LinearTransition.duration(180)}
           style={styles.menuContainer}
         >
           {/* Option 1: Edit Exercises & Sets */}
@@ -292,9 +292,9 @@ export const SessionActionHubBottomSheet: React.FC<SessionActionHubBottomSheetPr
       {view === 'rename' && (
         <Animated.View
           key="rename"
-          entering={FadeInRight.duration(220).springify().damping(18)}
-          exiting={FadeOutRight.duration(160)}
-          layout={LinearTransition.springify().damping(20).stiffness(220)}
+          entering={FadeInRight.duration(180)}
+          exiting={FadeOutRight.duration(140)}
+          layout={LinearTransition.duration(180)}
           style={styles.formContainer}
         >
           <Input
@@ -327,9 +327,9 @@ export const SessionActionHubBottomSheet: React.FC<SessionActionHubBottomSheetPr
       {view === 'timing' && (
         <Animated.View
           key="timing"
-          entering={FadeInRight.duration(220).springify().damping(18)}
-          exiting={FadeOutRight.duration(160)}
-          layout={LinearTransition.springify().damping(20).stiffness(220)}
+          entering={FadeInRight.duration(180)}
+          exiting={FadeOutRight.duration(140)}
+          layout={LinearTransition.duration(180)}
           style={styles.formContainer}
         >
           <Input
@@ -372,9 +372,9 @@ export const SessionActionHubBottomSheet: React.FC<SessionActionHubBottomSheetPr
       {view === 'delete' && (
         <Animated.View
           key="delete"
-          entering={FadeInRight.duration(220).springify().damping(18)}
-          exiting={FadeOutRight.duration(160)}
-          layout={LinearTransition.springify().damping(20).stiffness(220)}
+          entering={FadeInRight.duration(180)}
+          exiting={FadeOutRight.duration(140)}
+          layout={LinearTransition.duration(180)}
           style={styles.deleteContainer}
         >
           <View style={styles.warningBox}>
