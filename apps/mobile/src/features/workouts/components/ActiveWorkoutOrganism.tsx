@@ -2,10 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, ScrollView, Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter, useNavigation } from 'expo-router';
-import { Plus, Dumbbell } from 'lucide-react-native';
+import { Plus, Dumbbell, Trash2 } from 'lucide-react-native';
 
 import { useActiveWorkout, WorkoutMode, ActiveSet } from '../hooks/useActiveWorkout';
 import { ExercisePickerBottomSheet } from './ExercisePickerBottomSheet';
+import { DeleteSessionBottomSheet } from './DeleteSessionBottomSheet';
 import { Typography, Button } from '@/components/ui';
 import { Colors } from '@/theme/colors';
 import {
@@ -33,6 +34,7 @@ export const ActiveWorkoutOrganism: React.FC<ActiveWorkoutOrganismProps> = ({
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
   const [pickerVisible, setPickerVisible] = useState(false);
+  const [deleteSheetVisible, setDeleteSheetVisible] = useState(false);
 
   const handleExit = () => {
     if (onClose) {
@@ -49,6 +51,7 @@ export const ActiveWorkoutOrganism: React.FC<ActiveWorkoutOrganismProps> = ({
     elapsedSeconds,
     exercises,
     submitting,
+    editingSessionId,
     startSession,
     loadSessionForEdit,
     resetSession,
@@ -147,6 +150,7 @@ export const ActiveWorkoutOrganism: React.FC<ActiveWorkoutOrganismProps> = ({
         setTitle={setTitle}
         mode={activeMode}
         onDiscard={handleDiscard}
+        onDeleteSession={editingSessionId ? () => setDeleteSheetVisible(true) : undefined}
       />
 
       {/* Live HUD Metric Bar Molecule */}
@@ -201,6 +205,19 @@ export const ActiveWorkoutOrganism: React.FC<ActiveWorkoutOrganismProps> = ({
             />
           ))
         )}
+
+        {/* Delete Workout Session Action Button when editing */}
+        {Boolean(editingSessionId) && (
+          <View style={styles.deleteSessionWrapper}>
+            <Button
+              title="DELETE WORKOUT"
+              variant="outline"
+              icon={<Trash2 size={16} color={Colors.racingRed} />}
+              onPress={() => setDeleteSheetVisible(true)}
+              style={styles.deleteSessionBtn}
+            />
+          </View>
+        )}
       </ScrollView>
 
       {/* Bottom Action Footer Bar Molecule */}
@@ -215,6 +232,18 @@ export const ActiveWorkoutOrganism: React.FC<ActiveWorkoutOrganismProps> = ({
         visible={pickerVisible}
         onClose={() => setPickerVisible(false)}
         onSelectExercise={(selected) => addExercise(selected)}
+      />
+
+      {/* Delete Workout Session Confirmation Sheet */}
+      <DeleteSessionBottomSheet
+        sessionId={editingSessionId}
+        sessionTitle={title}
+        visible={deleteSheetVisible}
+        onClose={() => setDeleteSheetVisible(false)}
+        onSuccess={() => {
+          resetSession();
+          handleExit();
+        }}
       />
     </View>
   );
@@ -243,6 +272,15 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: 60,
     paddingHorizontal: 20,
+  },
+  deleteSessionWrapper: {
+    marginTop: 20,
+    marginBottom: 8,
+    alignItems: 'center',
+  },
+  deleteSessionBtn: {
+    width: '100%',
+    borderColor: Colors.border,
   },
 });
 

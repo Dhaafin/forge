@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, StyleSheet, TouchableOpacity, TextInput, Platform } from 'react-native';
-import { ArrowLeft } from 'lucide-react-native';
+import { ArrowLeft, Trash2 } from 'lucide-react-native';
 import { Typography, Badge } from '@/components/ui';
 import { Colors } from '@/theme/colors';
 import { WorkoutMode } from '../../hooks/useActiveWorkout';
@@ -10,6 +10,7 @@ export interface ActiveWorkoutHeaderProps {
   setTitle: (title: string) => void;
   mode: WorkoutMode;
   onDiscard: () => void;
+  onDeleteSession?: () => void;
 }
 
 export const ActiveWorkoutHeader: React.FC<ActiveWorkoutHeaderProps> = ({
@@ -17,6 +18,7 @@ export const ActiveWorkoutHeader: React.FC<ActiveWorkoutHeaderProps> = ({
   setTitle,
   mode,
   onDiscard,
+  onDeleteSession,
 }) => {
   return (
     <>
@@ -42,6 +44,15 @@ export const ActiveWorkoutHeader: React.FC<ActiveWorkoutHeaderProps> = ({
             label={mode === 'live' ? 'LIVE' : 'LOG'}
             variant={mode === 'live' ? 'primary' : 'cyan'}
           />
+          {Boolean(onDeleteSession) && (
+            <TouchableOpacity
+              style={styles.deleteIconBtn}
+              activeOpacity={0.7}
+              onPress={onDeleteSession}
+            >
+              <Trash2 size={16} color={Colors.racingRed} />
+            </TouchableOpacity>
+          )}
         </View>
       </View>
 
@@ -68,6 +79,16 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.surface,
     borderWidth: 1,
     borderColor: Colors.border,
+  },
+  deleteIconBtn: {
+    padding: 6,
+    borderRadius: 10,
+    backgroundColor: Colors.surface,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: 2,
   },
   titleContainer: {
     flex: 1,
