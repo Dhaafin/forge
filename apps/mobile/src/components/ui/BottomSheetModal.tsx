@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Modal,
   View,
@@ -23,6 +23,8 @@ import Animated, {
   runOnJS,
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import * as Haptics from 'expo-haptics';
+import { BlurView } from 'expo-blur';
 import { X } from 'lucide-react-native';
 import { Typography } from './Typography';
 import { Colors } from '@/theme/colors';
@@ -39,6 +41,8 @@ export interface BottomSheetModalProps {
   contentStyle?: StyleProp<ViewStyle>;
   heightPercent?: number | string;
   enableDragToDismiss?: boolean;
+  enableBlur?: boolean;
+  enableHaptics?: boolean;
 }
 
 export function BottomSheetModal({
@@ -53,23 +57,37 @@ export function BottomSheetModal({
   contentStyle,
   heightPercent,
   enableDragToDismiss = true,
+  enableBlur = false,
+  enableHaptics = true,
 }: BottomSheetModalProps) {
   const insets = useSafeAreaInsets();
   const dynamicBottomPadding = Math.max(insets.bottom + 12, 20);
   const [modalVisible, setModalVisible] = useState(visible);
   const dragY = useSharedValue(0);
 
+  const triggerHaptic = useCallback(
+    (style: Haptics.ImpactFeedbackStyle = Haptics.ImpactFeedbackStyle.Light) => {
+      if (enableHaptics && Platform.OS !== 'web') {
+        try {
+          Haptics.impactAsync(style);
+        } catch {}
+      }
+    },
+    [enableHaptics]
+  );
+
   useEffect(() => {
     if (visible) {
       dragY.value = 0;
       setModalVisible(true);
+      triggerHaptic(Haptics.ImpactFeedbackStyle.Light);
     } else {
       const timer = setTimeout(() => {
         setModalVisible(false);
       }, 220);
       return () => clearTimeout(timer);
     }
-  }, [visible, dragY]);
+  }, [visible, dragY, triggerHaptic]);
 
   useEffect(() => {
     if (!visible) return;
@@ -93,6 +111,7 @@ export function BottomSheetModal({
     })
     .onEnd((event) => {
       if (event.translationY > 120 || event.velocityY > 600) {
+        runOnJS(triggerHaptic)(Haptics.ImpactFeedbackStyle.Medium);
         dragY.value = withTiming(600, { duration: 180 }, () => {
           runOnJS(onClose)();
         });
@@ -116,6 +135,7 @@ export function BottomSheetModal({
     >
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 40 : 0}
         style={styles.overlay}
       >
         {visible && (
@@ -124,6 +144,13 @@ export function BottomSheetModal({
             exiting={FadeOut.duration(200)}
             style={styles.backdrop}
           >
+            {enableBlur && Platform.OS !== 'web' ? (
+              <BlurView
+                intensity={35}
+                tint="dark"
+                style={StyleSheet.absoluteFill}
+              />
+            ) : null}
             <TouchableOpacity
               activeOpacity={1}
               onPress={onClose}
