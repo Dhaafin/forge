@@ -68,9 +68,11 @@ export const HistoryOrganism: React.FC = () => {
     refetch,
   } = useWorkoutHistory();
 
-  // Auto refetch history on page focus
+  // Auto refetch history on page focus and reset any lingering sheets
   useFocusEffect(
     useCallback(() => {
+      setRecordSheetVisible(false);
+      setSelectedSession(null);
       refetch();
     }, [refetch])
   );
