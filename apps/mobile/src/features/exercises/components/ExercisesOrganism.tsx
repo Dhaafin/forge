@@ -197,6 +197,7 @@ export const ExercisesOrganism: React.FC = () => {
           data={exercises}
           keyExtractor={(item) => item.id}
           renderItem={renderExerciseItem}
+          style={styles.flatList}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
           ListEmptyComponent={
@@ -277,6 +278,9 @@ const styles = StyleSheet.create({
   chipText: {
     fontFamily: 'Inter_600SemiBold',
     fontSize: 12,
+  },
+  flatList: {
+    flex: 1,
   },
   listContent: {
     paddingHorizontal: 20,

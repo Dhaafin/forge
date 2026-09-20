@@ -235,6 +235,7 @@ export const HistoryOrganism: React.FC = () => {
           data={sessions}
           keyExtractor={(item) => item.id}
           renderItem={renderSessionItem}
+          style={styles.flatList}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
           ListEmptyComponent={
@@ -302,6 +303,9 @@ const styles = StyleSheet.create({
   chipText: {
     fontFamily: 'Inter_600SemiBold',
     fontSize: 12,
+  },
+  flatList: {
+    flex: 1,
   },
   listContent: {
     paddingHorizontal: 20,
