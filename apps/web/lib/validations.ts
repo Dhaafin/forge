@@ -12,6 +12,7 @@ export const LoginSchema = z.object({
 
 export const ExerciseQuerySchema = z.object({
   search: z.string().optional(),
+  targetMuscle: z.string().optional(),
   sortBy: z.enum(['name', 'target_muscle']).default('name'),
   order: z.enum(['asc', 'desc']).default('asc'),
   limit: z.coerce.number().int().min(1).max(100).default(20),

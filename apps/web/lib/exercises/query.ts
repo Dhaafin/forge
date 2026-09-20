@@ -6,6 +6,7 @@ import { eq, and, ilike, or, asc, desc, count } from "drizzle-orm";
 
 export type ExerciseQueryParams = {
   search?: string;
+  targetMuscle?: string;
   sortBy?: "name" | "target_muscle";
   order?: "asc" | "desc";
   limit?: number;
@@ -13,11 +14,19 @@ export type ExerciseQueryParams = {
 };
 
 export async function getAllExercises(params: ExerciseQueryParams = {}) {
-  const { search, sortBy = "name", order = "asc", limit = 20, offset = 0 } = params;
+  const { search, targetMuscle, sortBy = "name", order = "asc", limit = 20, offset = 0 } = params;
 
-  const whereClause = search
-    ? or(ilike(exercises.name, `%${search}%`), ilike(exercises.targetMuscle, `%${search}%`))
-    : undefined;
+  const conditions = [];
+
+  if (search) {
+    conditions.push(or(ilike(exercises.name, `%${search}%`), ilike(exercises.targetMuscle, `%${search}%`)));
+  }
+
+  if (targetMuscle) {
+    conditions.push(ilike(exercises.targetMuscle, targetMuscle));
+  }
+
+  const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
 
   const [countResult] = await db
     .select({ total: count() })
